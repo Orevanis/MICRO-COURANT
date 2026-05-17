@@ -1,0 +1,61 @@
+{
+  "name": "micro-courant",
+  "version": "1.0.0",
+  "description": "Decentralized Community Energy Grid Settlement & Microbilling Infrastructure (Stellar DePIN System)",
+  "private": true,
+  "workspaces": [
+    "frontend/*",
+    "backend/*",
+    "sdk/js"
+  ],
+  "scripts": {
+    "install:all": "npm install && npm run install:frontend && npm run install:backend && npm run install:sdk",
+    "install:frontend": "cd frontend/household-dashboard && npm install && cd ../operator-dashboard && npm install && cd ../governance-dashboard && npm install",
+    "install:backend": "cd backend/telemetry && npm install && cd ../api-gateway && npm install && cd ../billing-engine && npm install",
+    "install:sdk": "cd sdk/js && npm install",
+    "build:contracts": "cd contracts && cargo build --release",
+    "test:contracts": "cd contracts && cargo test",
+    "deploy:contracts": "cd contracts && soroban contract deploy",
+    "dev": "concurrently \"npm run dev:telemetry\" \"npm run dev:api-gateway\" \"npm run dev:billing\"",
+    "dev:telemetry": "cd backend/telemetry && npm run dev",
+    "dev:api-gateway": "cd backend/api-gateway && npm run dev",
+    "dev:billing": "cd backend/billing-engine && npm run dev",
+    "dev:household": "cd frontend/household-dashboard && npm run dev",
+    "dev:operator": "cd frontend/operator-dashboard && npm run dev",
+    "dev:governance": "cd frontend/governance-dashboard && npm run dev",
+    "test": "npm run test:contracts && npm run test:backend && npm run test:frontend",
+    "test:backend": "cd backend && npm test",
+    "test:frontend": "cd frontend && npm test",
+    "lint": "eslint . --ext .js,.jsx,.ts,.tsx",
+    "format": "prettier --write \"**/*.{js,jsx,ts,tsx,json,md}\"",
+    "docker:up": "docker-compose up -d",
+    "docker:down": "docker-compose down",
+    "docker:build": "docker-compose build"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2",
+    "eslint": "^8.57.0",
+    "prettier": "^3.2.5",
+    "@typescript-eslint/eslint-plugin": "^7.0.0",
+    "@typescript-eslint/parser": "^7.0.0"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/micro-courant/micro-courant"
+  },
+  "license": "MIT",
+  "keywords": [
+    "stellar",
+    "soroban",
+    "energy",
+    "microgrid",
+    "blockchain",
+    "depin",
+    "settlement",
+    "billing"
+  ]
+}

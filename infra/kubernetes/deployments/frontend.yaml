@@ -1,0 +1,155 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: household-dashboard
+  namespace: micro-courant
+  labels:
+    app: household-dashboard
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: household-dashboard
+  template:
+    metadata:
+      labels:
+        app: household-dashboard
+    spec:
+      containers:
+      - name: household-dashboard
+        image: micro-courant/household-dashboard:latest
+        ports:
+        - containerPort: 80
+        env:
+        - name: VITE_API_URL
+          value: "https://api.micro-courant.org"
+        - name: VITE_STELLAR_NETWORK
+          valueFrom:
+            secretKeyRef:
+              name: stellar-secret
+              key: STELLAR_NETWORK
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "256Mi"
+            cpu: "200m"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: household-dashboard-service
+  namespace: micro-courant
+spec:
+  selector:
+    app: household-dashboard
+  ports:
+  - protocol: TCP
+    port: 80
+    targetPort: 80
+  type: LoadBalancer
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: operator-dashboard
+  namespace: micro-courant
+  labels:
+    app: operator-dashboard
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: operator-dashboard
+  template:
+    metadata:
+      labels:
+        app: operator-dashboard
+    spec:
+      containers:
+      - name: operator-dashboard
+        image: micro-courant/operator-dashboard:latest
+        ports:
+        - containerPort: 80
+        env:
+        - name: VITE_API_URL
+          value: "https://api.micro-courant.org"
+        - name: VITE_STELLAR_NETWORK
+          valueFrom:
+            secretKeyRef:
+              name: stellar-secret
+              key: STELLAR_NETWORK
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "256Mi"
+            cpu: "200m"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: operator-dashboard-service
+  namespace: micro-courant
+spec:
+  selector:
+    app: operator-dashboard
+  ports:
+  - protocol: TCP
+    port: 80
+    targetPort: 80
+  type: LoadBalancer
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: governance-dashboard
+  namespace: micro-courant
+  labels:
+    app: governance-dashboard
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: governance-dashboard
+  template:
+    metadata:
+      labels:
+        app: governance-dashboard
+    spec:
+      containers:
+      - name: governance-dashboard
+        image: micro-courant/governance-dashboard:latest
+        ports:
+        - containerPort: 80
+        env:
+        - name: VITE_API_URL
+          value: "https://api.micro-courant.org"
+        - name: VITE_STELLAR_NETWORK
+          valueFrom:
+            secretKeyRef:
+              name: stellar-secret
+              key: STELLAR_NETWORK
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "256Mi"
+            cpu: "200m"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: governance-dashboard-service
+  namespace: micro-courant
+spec:
+  selector:
+    app: governance-dashboard
+  ports:
+  - protocol: TCP
+    port: 80
+    targetPort: 80
+  type: LoadBalancer

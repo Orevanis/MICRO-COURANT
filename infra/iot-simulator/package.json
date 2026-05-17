@@ -1,0 +1,24 @@
+{
+  "name": "@micro-courant/iot-simulator",
+  "version": "1.0.0",
+  "description": "IoT meter simulator for Micro-Courant",
+  "main": "src/index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "node --watch src/index.js",
+    "test": "jest"
+  },
+  "dependencies": {
+    "mqtt": "^5.3.4",
+    "winston": "^3.11.0",
+    "dotenv": "^16.3.1",
+    "uuid": "^9.0.1"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

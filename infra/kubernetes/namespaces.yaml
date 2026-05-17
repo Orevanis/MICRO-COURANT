@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: micro-courant
+  labels:
+    name: micro-courant
+    environment: production

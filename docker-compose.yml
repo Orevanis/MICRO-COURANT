@@ -1,0 +1,197 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:16-alpine
+    container_name: micro-courant-postgres
+    environment:
+      POSTGRES_DB: micro_courant
+      POSTGRES_USER: courant_user
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-dev_password_change_in_prod}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./backend/telemetry/db/init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U courant_user -d micro_courant"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - courant-network
+
+  # Redis for real-time balance updates
+  redis:
+    image: redis:7-alpine
+    container_name: micro-courant-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+    networks:
+      - courant-network
+
+  # MQTT Broker for IoT meter simulation
+  mosquitto:
+    image: eclipse-mosquitto:2.0
+    container_name: micro-courant-mosquitto
+    ports:
+      - "1883:1883"
+      - "9001:9001"
+    volumes:
+      - ./infra/docker/mosquitto/config:/mosquitto/config
+      - ./infra/docker/mosquitto/data:/mosquitto/data
+      - ./infra/docker/mosquitto/logs:/mosquitto/log
+    networks:
+      - courant-network
+
+  # Telemetry Ingestion Service
+  telemetry:
+    build:
+      context: ./backend/telemetry
+      dockerfile: Dockerfile
+    container_name: micro-courant-telemetry
+    environment:
+      NODE_ENV: development
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+      POSTGRES_DB: micro_courant
+      POSTGRES_USER: courant_user
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-dev_password_change_in_prod}
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      MQTT_BROKER: mosquitto
+      MQTT_PORT: 1883
+      STELLAR_NETWORK: testnet
+    ports:
+      - "3001:3001"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      mosquitto:
+        condition: service_started
+    networks:
+      - courant-network
+
+  # API Gateway
+  api-gateway:
+    build:
+      context: ./backend/api-gateway
+      dockerfile: Dockerfile
+    container_name: micro-courant-api-gateway
+    environment:
+      NODE_ENV: development
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+      POSTGRES_DB: micro_courant
+      POSTGRES_USER: courant_user
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-dev_password_change_in_prod}
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      STELLAR_NETWORK: testnet
+      JWT_SECRET: ${JWT_SECRET:-dev_secret_change_in_prod}
+      RATE_LIMIT_WINDOW: 900000
+      RATE_LIMIT_MAX: 100
+    ports:
+      - "3000:3000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - courant-network
+
+  # Billing Engine
+  billing-engine:
+    build:
+      context: ./backend/billing-engine
+      dockerfile: Dockerfile
+    container_name: micro-courant-billing-engine
+    environment:
+      NODE_ENV: development
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+      POSTGRES_DB: micro_courant
+      POSTGRES_USER: courant_user
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-dev_password_change_in_prod}
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      STELLAR_NETWORK: testnet
+      SOROBAN_RPC_URL: ${SOROBAN_RPC_URL:-https://soroban-testnet.stellar.org}
+      CONTRACT_IDS: ${CONTRACT_IDS}
+    ports:
+      - "3002:3002"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - courant-network
+
+  # Household Dashboard
+  household-dashboard:
+    build:
+      context: ./frontend/household-dashboard
+      dockerfile: Dockerfile
+    container_name: micro-courant-household-dashboard
+    environment:
+      VITE_API_URL: http://localhost:3000
+      VITE_STELLAR_NETWORK: testnet
+    ports:
+      - "5173:5173"
+    depends_on:
+      - api-gateway
+    networks:
+      - courant-network
+
+  # Operator Dashboard
+  operator-dashboard:
+    build:
+      context: ./frontend/operator-dashboard
+      dockerfile: Dockerfile
+    container_name: micro-courant-operator-dashboard
+    environment:
+      VITE_API_URL: http://localhost:3000
+      VITE_STELLAR_NETWORK: testnet
+    ports:
+      - "5174:5174"
+    depends_on:
+      - api-gateway
+    networks:
+      - courant-network
+
+  # Governance Dashboard
+  governance-dashboard:
+    build:
+      context: ./frontend/governance-dashboard
+      dockerfile: Dockerfile
+    container_name: micro-courant-governance-dashboard
+    environment:
+      VITE_API_URL: http://localhost:3000
+      VITE_STELLAR_NETWORK: testnet
+    ports:
+      - "5175:5175"
+    depends_on:
+      - api-gateway
+    networks:
+      - courant-network
+
+volumes:
+  postgres_data:
+  redis_data:
+
+networks:
+  courant-network:
+    driver: bridge
