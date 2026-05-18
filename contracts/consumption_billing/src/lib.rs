@@ -588,7 +588,7 @@ impl ConsumptionBilling {
         env.storage().instance().set(&PROPOSALS, &proposals);
 
         env.events().publish(
-            EVT_PROPOSAL_CREATED,
+            (EVT_PROPOSAL_CREATED,),
             (proposal_id, proposal_type, proposer),
         );
 
@@ -638,7 +638,7 @@ impl ConsumptionBilling {
         env.storage().instance().set(&PROPOSALS, &proposals);
 
         env.events().publish(
-            EVT_PROPOSAL_SIGNED,
+            (EVT_PROPOSAL_SIGNED,),
             (proposal_id, signer, proposal.signatures.len()),
         );
     }
@@ -706,7 +706,7 @@ impl ConsumptionBilling {
         env.storage().instance().set(&PROPOSALS, &proposals);
 
         env.events().publish(
-            EVT_PROPOSAL_EXECUTED,
+            (EVT_PROPOSAL_EXECUTED,),
             (proposal_id, proposal.proposal_type),
         );
     }

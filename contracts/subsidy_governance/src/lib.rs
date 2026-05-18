@@ -303,7 +303,7 @@ impl SubsidyGovernance {
 
         // Emit event
         env.events().publish(
-            EVT_SUBSIDY_CREATED,
+            (EVT_SUBSIDY_CREATED,),
             (subsidy_id, name),
         );
 
