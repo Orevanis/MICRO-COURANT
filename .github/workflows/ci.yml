@@ -179,35 +179,16 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Setup Rust
-        uses: actions-rust-lang/setup-rust-toolchain@v1
-        with:
-          toolchain: ${{ env.RUST_VERSION }}
-
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
 
-      - name: Install Soroban CLI
-        run: cargo install soroban-cli --version 25.2.0
-
       - name: Install dependencies
-        run: |
-          npm install
-          npm run install:all
-
-      - name: Build contracts
-        run: npm run build:contracts
+        run: npm install
 
       - name: Run integration tests
-        run: |
-          # Run end-to-end energy lifecycle simulation
-          # Run high-frequency meter ingestion tests
-          # Run billing accuracy validation
-          # Run P2P trading validation
-          # Run governance voting simulation
-          echo "Running integration tests..."
+        run: npm run test:integration
         env:
           POSTGRES_HOST: localhost
           POSTGRES_PORT: 5432
