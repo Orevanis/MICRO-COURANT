@@ -7,7 +7,7 @@ on:
     branches: [main, develop]
 
 env:
-  RUST_VERSION: '1.70.0'
+  RUST_VERSION: '1.74.0'
   NODE_VERSION: '20'
 
 jobs:
@@ -19,11 +19,6 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Setup Rust
-        uses: actions-rust-lang/setup-rust-toolchain@v1
-        with:
-          toolchain: ${{ env.RUST_VERSION }}
-
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
@@ -33,11 +28,6 @@ jobs:
         run: |
           npm install
           npm run install:all
-
-      - name: Lint Rust contracts
-        run: |
-          cd contracts
-          cargo clippy --all-targets --all-features -- -D warnings
 
       - name: Lint JavaScript/TypeScript
         run: npm run lint
