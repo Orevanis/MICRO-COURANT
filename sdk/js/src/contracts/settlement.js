@@ -9,7 +9,14 @@ const SETTLEMENT_TYPES = {
 };
 
 export class SettlementContract extends BaseContract {
-  async createSettlement(type, fromAddress, toAddress, amount, referenceId, priority = 50) {
+  async createSettlement(
+    type,
+    fromAddress,
+    toAddress,
+    amount,
+    referenceId,
+    priority = 50,
+  ) {
     return this._call(
       "create_settlement",
       xdr.ScVal.scvVec([xdr.ScVal.scvSymbol(type)]),
@@ -22,7 +29,10 @@ export class SettlementContract extends BaseContract {
   }
 
   async processPendingSettlements(batchSize = 10) {
-    return this._call("process_pending_settlements", xdr.ScVal.scvU32(batchSize));
+    return this._call(
+      "process_pending_settlements",
+      xdr.ScVal.scvU32(batchSize),
+    );
   }
 
   async getSettlement(settlementId) {

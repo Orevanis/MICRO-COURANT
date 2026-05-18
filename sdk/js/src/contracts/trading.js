@@ -2,7 +2,12 @@ import { xdr, Address } from "stellar-sdk";
 import { BaseContract } from "./base.js";
 
 export class TradingContract extends BaseContract {
-  async createOffer(producerAddress, energyAmountKwh, pricePerKwh, expiryHours) {
+  async createOffer(
+    producerAddress,
+    energyAmountKwh,
+    pricePerKwh,
+    expiryHours,
+  ) {
     return this._call(
       "create_offer",
       new Address(producerAddress).toScVal(),
@@ -12,7 +17,12 @@ export class TradingContract extends BaseContract {
     );
   }
 
-  async createRequest(consumerAddress, energyAmountKwh, maxPricePerKwh, expiryHours) {
+  async createRequest(
+    consumerAddress,
+    energyAmountKwh,
+    maxPricePerKwh,
+    expiryHours,
+  ) {
     return this._call(
       "create_request",
       new Address(consumerAddress).toScVal(),

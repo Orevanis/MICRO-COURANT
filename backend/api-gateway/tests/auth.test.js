@@ -13,7 +13,10 @@ describe("Auth Middleware", () => {
     );
 
     const req = { headers: { authorization: `Bearer ${token}` } };
-    const res = { status: jest.fn().mockReturnThis(), json: jest.fn().mockReturnThis() };
+    const res = {
+      status: jest.fn().mockReturnThis(),
+      json: jest.fn().mockReturnThis(),
+    };
     const next = jest.fn();
 
     process.env.JWT_SECRET = mockSecret;
@@ -26,40 +29,60 @@ describe("Auth Middleware", () => {
 
   it("should reject requests without token", () => {
     const req = { headers: {} };
-    const res = { status: jest.fn().mockReturnThis(), json: jest.fn().mockReturnThis() };
+    const res = {
+      status: jest.fn().mockReturnThis(),
+      json: jest.fn().mockReturnThis(),
+    };
     const next = jest.fn();
 
     process.env.JWT_SECRET = mockSecret;
     authMiddleware(req, res, next);
 
     expect(res.status).toHaveBeenCalledWith(401);
-    expect(res.json).toHaveBeenCalledWith({ error: "Unauthorized", message: "No token provided" });
+    expect(res.json).toHaveBeenCalledWith({
+      error: "Unauthorized",
+      message: "No token provided",
+    });
     expect(next).not.toHaveBeenCalled();
   });
 
   it("should reject requests with invalid token", () => {
     const req = { headers: { authorization: "Bearer invalid_token" } };
-    const res = { status: jest.fn().mockReturnThis(), json: jest.fn().mockReturnThis() };
+    const res = {
+      status: jest.fn().mockReturnThis(),
+      json: jest.fn().mockReturnThis(),
+    };
     const next = jest.fn();
 
     process.env.JWT_SECRET = mockSecret;
     authMiddleware(req, res, next);
 
     expect(res.status).toHaveBeenCalledWith(401);
-    expect(res.json).toHaveBeenCalledWith({ error: "Unauthorized", message: "Invalid token" });
+    expect(res.json).toHaveBeenCalledWith({
+      error: "Unauthorized",
+      message: "Invalid token",
+    });
   });
 
   it("should reject requests with expired token", () => {
-    const token = jwt.sign({ id: "test-user" }, mockSecret, { expiresIn: "-1h" });
+    const token = jwt.sign({ id: "test-user" }, mockSecret, {
+      expiresIn: "-1h",
+    });
 
     const req = { headers: { authorization: `Bearer ${token}` } };
-    const res = { status: jest.fn().mockReturnThis(), json: jest.fn().mockReturnThis() };
+    const res = {
+      status: jest.fn().mockReturnThis(),
+      json: jest.fn().mockReturnThis(),
+    };
     const next = jest.fn();
 
     process.env.JWT_SECRET = mockSecret;
     authMiddleware(req, res, next);
 
     expect(res.status).toHaveBeenCalledWith(401);
-    expect(res.json).toHaveBeenCalledWith({ error: "Unauthorized", message: "Token expired" });
+    expect(res.json).toHaveBeenCalledWith({
+      error: "Unauthorized",
+      message: "Token expired",
+    });
   });
 });

@@ -14,8 +14,10 @@ export class BaseContract {
   }
 
   async _call(method, ...args) {
-    if (!this.contract) throw new Error(`Contract ID not set for ${this.constructor.name}`);
-    if (!this.keypair) throw new Error("No keypair configured — read-only mode");
+    if (!this.contract)
+      throw new Error(`Contract ID not set for ${this.constructor.name}`);
+    if (!this.keypair)
+      throw new Error("No keypair configured — read-only mode");
 
     const account = await this.server.getAccount(this.keypair.publicKey());
     const tx = new TransactionBuilder(account, {

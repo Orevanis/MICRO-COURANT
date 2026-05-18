@@ -48,9 +48,16 @@ export class MicroCourantClient {
   async initialize() {
     this.server = new SorobanRpc.Server(this.rpcUrl);
 
-    const ctx = { server: this.server, network: this.network, keypair: this.keypair };
+    const ctx = {
+      server: this.server,
+      network: this.network,
+      keypair: this.keypair,
+    };
 
-    this.meterRegistry = new MeterRegistryContract(ctx, this.contractIds.meterRegistry);
+    this.meterRegistry = new MeterRegistryContract(
+      ctx,
+      this.contractIds.meterRegistry,
+    );
     this.billing = new BillingContract(ctx, this.contractIds.billing);
     this.trading = new TradingContract(ctx, this.contractIds.trading);
     this.governance = new GovernanceContract(ctx, this.contractIds.governance);

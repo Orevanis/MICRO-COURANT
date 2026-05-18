@@ -35,8 +35,12 @@ describe("End-to-End Energy Lifecycle", () => {
   afterAll(async () => {
     if (skipE2E || !householdId) return;
     // Best-effort cleanup — ignore errors
-    await apiRequest(`/api/v1/identity/${householdId}`, { method: "DELETE" }).catch(() => {});
-    await apiRequest(`/api/v1/telemetry/meter/${meterId}`, { method: "DELETE" }).catch(() => {});
+    await apiRequest(`/api/v1/identity/${householdId}`, {
+      method: "DELETE",
+    }).catch(() => {});
+    await apiRequest(`/api/v1/telemetry/meter/${meterId}`, {
+      method: "DELETE",
+    }).catch(() => {});
   });
 
   it("should register a new household", async () => {
@@ -242,7 +246,11 @@ describe("Governance Voting Simulation", () => {
     for (const voter of voters) {
       const response = await apiRequest("/api/v1/governance/vote", {
         method: "POST",
-        body: JSON.stringify({ voter, proposal_id: proposalId, vote_option: "yes" }),
+        body: JSON.stringify({
+          voter,
+          proposal_id: proposalId,
+          vote_option: "yes",
+        }),
       });
       expect(response.status).toBe(200);
     }

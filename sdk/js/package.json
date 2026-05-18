@@ -11,7 +11,12 @@
     "test": "jest",
     "lint": "eslint src/**/*.js"
   },
-  "keywords": ["stellar", "soroban", "energy", "microgrid"],
+  "keywords": [
+    "stellar",
+    "soroban",
+    "energy",
+    "microgrid"
+  ],
   "license": "MIT",
   "peerDependencies": {
     "stellar-sdk": ">=11.0.0"
