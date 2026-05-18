@@ -228,10 +228,21 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Run Rust security audit
-        uses: rustsec/audit-check@v1
+      - name: Setup Rust
+        uses: actions-rust-lang/setup-rust-toolchain@v1
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
+          toolchain: ${{ env.RUST_VERSION }}
+
+      - name: Generate Cargo lockfile
+        run: cd contracts && cargo generate-lockfile
+
+      - name: Run Rust security audit
+        uses: actions-rust-lang/audit@v1
+        with:
+          working-directory: contracts
+
+      - name: Install npm dependencies
+        run: npm install
 
       - name: Run npm audit
         run: npm audit --audit-level=moderate

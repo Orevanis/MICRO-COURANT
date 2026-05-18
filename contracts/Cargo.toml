@@ -1,0 +1,12 @@
+[workspace]
+resolver = "2"
+members = [
+    "energy_meter_registry",
+    "consumption_billing",
+    "p2p_energy_trading",
+    "subsidy_governance",
+    "grid_settlement",
+]
+
+[workspace.dependencies]
+soroban-sdk = { version = "26.0.0" }
