@@ -265,7 +265,7 @@ describe("Integration Tests - Multi-Sig Governance", () => {
   it("should track proposal expiration", () => {
     const proposal = {
       id: "prop-003",
-      createdAt: Date.now() - 86400000,
+      createdAt: Date.now() - 86400001, // 1ms past expiration
       expiration: 86400000,
       status: "pending",
     };

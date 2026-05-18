@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, afterEach } from "@jest/globals";
+import { describe, it, expect, beforeEach, afterEach, jest } from "@jest/globals";
 import { TelemetryService } from "../src/services/telemetryService.js";
 import { FraudDetector } from "../src/services/fraudDetector.js";
 
@@ -25,10 +25,13 @@ describe("TelemetryService", () => {
         timestamp: Date.now(),
       };
 
-      // Mock database operations
-      telemetryService.pool = {
+      const mockClient = {
         query: jest.fn().mockResolvedValue({ rows: [{ id: 1 }] }),
-        connect: jest.fn().mockResolvedValue({ query: jest.fn() }),
+        release: jest.fn(),
+      };
+
+      telemetryService.pool = {
+        connect: jest.fn().mockResolvedValue(mockClient),
         end: jest.fn().mockResolvedValue(),
       };
 
@@ -54,6 +57,20 @@ describe("TelemetryService", () => {
         timestamp: Date.now(),
       };
 
+      const mockClient = {
+        query: jest.fn().mockRejectedValue(new Error("Invalid consumption value")),
+        release: jest.fn(),
+      };
+
+      telemetryService.pool = {
+        connect: jest.fn().mockResolvedValue(mockClient),
+        end: jest.fn().mockResolvedValue(),
+      };
+
+      telemetryService.redis = {
+        quit: jest.fn().mockResolvedValue(),
+      };
+
       await expect(telemetryService.processReading(reading)).rejects.toThrow();
     });
   });
@@ -63,6 +80,9 @@ describe("TelemetryService", () => {
       fraudDetector.redis = {
         get: jest.fn().mockResolvedValue(Date.now().toString()),
         setex: jest.fn().mockResolvedValue(),
+        set: jest.fn().mockResolvedValue(),
+        expire: jest.fn().mockResolvedValue(),
+        incr: jest.fn().mockResolvedValue(0),
         quit: jest.fn().mockResolvedValue(),
       };
 
@@ -79,8 +99,18 @@ describe("TelemetryService", () => {
 
     it("should detect consumption spikes", async () => {
       fraudDetector.redis = {
-        get: jest.fn().mockResolvedValue("1.0"),
+        // duplicate check: no existing duplicate
+        get: jest.fn()
+          .mockResolvedValueOnce(null)       // checkDuplicateReading: no duplicate
+          .mockResolvedValueOnce(null)       // getMeterProfile: no profile
+          .mockResolvedValueOnce("1.0")      // checkConsumptionSpike: last reading = 1.0
+          .mockResolvedValueOnce(null)       // getMeterProfile for frequency
+          .mockResolvedValueOnce(null)       // checkReadingFrequency: no last timestamp
+          .mockResolvedValueOnce(null),      // checkMeterTampering: no score
         set: jest.fn().mockResolvedValue(),
+        setex: jest.fn().mockResolvedValue(),
+        expire: jest.fn().mockResolvedValue(),
+        incr: jest.fn().mockResolvedValue(0),
         quit: jest.fn().mockResolvedValue(),
       };
 
@@ -96,9 +126,19 @@ describe("TelemetryService", () => {
     });
 
     it("should detect high frequency readings", async () => {
+      const recentTimestamp = (Date.now() - 500).toString();
       fraudDetector.redis = {
-        get: jest.fn().mockResolvedValue((Date.now() - 500).toString()),
+        get: jest.fn()
+          .mockResolvedValueOnce(null)              // checkDuplicateReading: no duplicate
+          .mockResolvedValueOnce(null)              // getMeterProfile for spike
+          .mockResolvedValueOnce(null)              // checkConsumptionSpike: no last reading
+          .mockResolvedValueOnce(null)              // getMeterProfile for frequency
+          .mockResolvedValueOnce(recentTimestamp)   // checkReadingFrequency: recent timestamp
+          .mockResolvedValueOnce(null),             // checkMeterTampering: no score
         set: jest.fn().mockResolvedValue(),
+        setex: jest.fn().mockResolvedValue(),
+        expire: jest.fn().mockResolvedValue(),
+        incr: jest.fn().mockResolvedValue(0),
         quit: jest.fn().mockResolvedValue(),
       };
 
@@ -118,6 +158,8 @@ describe("TelemetryService", () => {
         get: jest.fn().mockResolvedValue(null),
         set: jest.fn().mockResolvedValue(),
         setex: jest.fn().mockResolvedValue(),
+        expire: jest.fn().mockResolvedValue(),
+        incr: jest.fn().mockResolvedValue(0),
         quit: jest.fn().mockResolvedValue(),
       };
 

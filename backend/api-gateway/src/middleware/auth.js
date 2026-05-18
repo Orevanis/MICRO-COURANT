@@ -16,11 +16,18 @@ export const authMiddleware = (req, res, next) => {
     const token = authHeader.substring(7);
 
     try {
-      const decoded = jwt.verify(token, config.jwt.secret);
+      const secret = process.env.JWT_SECRET || config.jwt.secret;
+      const decoded = jwt.verify(token, secret);
       req.user = decoded;
       next();
     } catch (jwtError) {
       logger.warn("Invalid JWT token:", jwtError.message);
+      if (jwtError.name === "TokenExpiredError") {
+        return res.status(401).json({
+          error: "Unauthorized",
+          message: "Token expired",
+        });
+      }
       return res.status(401).json({
         error: "Unauthorized",
         message: "Invalid token",
@@ -42,7 +49,8 @@ export const optionalAuth = (req, res, next) => {
     if (authHeader && authHeader.startsWith("Bearer ")) {
       const token = authHeader.substring(7);
       try {
-        const decoded = jwt.verify(token, config.jwt.secret);
+        const secret = process.env.JWT_SECRET || config.jwt.secret;
+        const decoded = jwt.verify(token, secret);
         req.user = decoded;
       } catch (jwtError) {
         // Token invalid, but we continue without user

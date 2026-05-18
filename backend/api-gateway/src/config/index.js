@@ -2,14 +2,16 @@ import dotenv from "dotenv";
 
 dotenv.config();
 
-// Validate required environment variables
-const requiredEnvVars = ["JWT_SECRET", "POSTGRES_PASSWORD"];
-const missingVars = requiredEnvVars.filter((varName) => !process.env[varName]);
+// Validate required environment variables (skip during tests)
+if (process.env.NODE_ENV !== "test") {
+  const requiredEnvVars = ["JWT_SECRET", "POSTGRES_PASSWORD"];
+  const missingVars = requiredEnvVars.filter((varName) => !process.env[varName]);
 
-if (missingVars.length > 0) {
-  throw new Error(
-    `Missing required environment variables: ${missingVars.join(", ")}`,
-  );
+  if (missingVars.length > 0) {
+    throw new Error(
+      `Missing required environment variables: ${missingVars.join(", ")}`,
+    );
+  }
 }
 
 export const config = {

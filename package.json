@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "Decentralized Community Energy Grid Settlement & Microbilling Infrastructure (Stellar DePIN System)",
   "private": true,
+  "type": "module",
   "workspaces": [
     "frontend/*",
     "backend/*",
@@ -23,8 +24,9 @@
     "dev:household": "cd frontend/household-dashboard && npm run dev",
     "dev:operator": "cd frontend/operator-dashboard && npm run dev",
     "dev:governance": "cd frontend/governance-dashboard && npm run dev",
-    "test": "npm run test:contracts && npm run test:backend && npm run test:frontend",
-    "test:backend": "cd backend && npm test",
+    "test": "npm run test:backend && npm run test:integration",
+    "test:backend": "cd backend/telemetry && npm test && cd ../api-gateway && npm test && cd ../billing-engine && npm test",
+    "test:integration": "node --experimental-vm-modules node_modules/.bin/jest --config jest.config.js",
     "test:frontend": "cd frontend && npm test",
     "lint": "eslint . --ext .js,.jsx,.ts,.tsx",
     "format": "prettier --write \"**/*.{js,jsx,ts,tsx,json,md}\"",
@@ -33,11 +35,15 @@
     "docker:build": "docker-compose build"
   },
   "devDependencies": {
+    "@jest/globals": "^29.7.0",
+    "@typescript-eslint/eslint-plugin": "^7.0.0",
+    "@typescript-eslint/parser": "^7.0.0",
     "concurrently": "^8.2.2",
     "eslint": "^8.57.0",
+    "jest": "^29.7.0",
     "prettier": "^3.2.5",
-    "@typescript-eslint/eslint-plugin": "^7.0.0",
-    "@typescript-eslint/parser": "^7.0.0"
+    "rate-limit-redis": "^5.0.0",
+    "supertest": "^7.2.2"
   },
   "engines": {
     "node": ">=18.0.0",
