@@ -1,5 +1,6 @@
 #![no_std]
-use soroban_sdk::{contract, contractimpl, contracttype, Address, Env, Map, String, Vec};
+#![allow(dead_code)]
+use soroban_sdk::{contract, contractimpl, contracttype, Address, Env, Map, Vec};
 
 /// Trade status
 #[contracttype]
@@ -89,7 +90,9 @@ impl P2PEnergyTrading {
     pub fn set_settlement_contract(env: Env, settlement_contract: Address) {
         let admin: Address = env.storage().instance().get(&ADMIN).unwrap().unwrap();
         admin.require_auth();
-        env.storage().instance().set(&SETTLEMENT_CONTRACT, &settlement_contract);
+        env.storage()
+            .instance()
+            .set(&SETTLEMENT_CONTRACT, &settlement_contract);
     }
 
     /// Create energy offer (producer)
@@ -105,7 +108,12 @@ impl P2PEnergyTrading {
         let timestamp = env.ledger().timestamp();
         let expiry_timestamp = timestamp + (expiry_hours * 3600);
 
-        let offer_counter: u64 = env.storage().instance().get(&OFFER_COUNTER).unwrap().unwrap();
+        let offer_counter: u64 = env
+            .storage()
+            .instance()
+            .get(&OFFER_COUNTER)
+            .unwrap()
+            .unwrap();
         let offer_id = offer_counter + 1;
 
         let offer = EnergyOffer {
@@ -118,7 +126,11 @@ impl P2PEnergyTrading {
             created_at: timestamp,
         };
 
-        let mut offers: Map<u64, EnergyOffer> = env.storage().instance().get(&OFFERS).unwrap_or_else(|| Map::new(&env));
+        let mut offers: Map<u64, EnergyOffer> = env
+            .storage()
+            .instance()
+            .get(&OFFERS)
+            .unwrap_or_else(|| Map::new(&env));
         offers.set(offer_id, offer);
         env.storage().instance().set(&OFFERS, &offers);
         env.storage().instance().set(&OFFER_COUNTER, &offer_id);
@@ -145,7 +157,12 @@ impl P2PEnergyTrading {
         let timestamp = env.ledger().timestamp();
         let expiry_timestamp = timestamp + (expiry_hours * 3600);
 
-        let request_counter: u64 = env.storage().instance().get(&REQUEST_COUNTER).unwrap().unwrap();
+        let request_counter: u64 = env
+            .storage()
+            .instance()
+            .get(&REQUEST_COUNTER)
+            .unwrap()
+            .unwrap();
         let request_id = request_counter + 1;
 
         let request = EnergyRequest {
@@ -158,10 +175,16 @@ impl P2PEnergyTrading {
             created_at: timestamp,
         };
 
-        let mut requests: Map<u64, EnergyRequest> = env.storage().instance().get(&REQUESTS).unwrap_or_else(|| Map::new(&env));
+        let mut requests: Map<u64, EnergyRequest> = env
+            .storage()
+            .instance()
+            .get(&REQUESTS)
+            .unwrap_or_else(|| Map::new(&env));
         requests.set(request_id, request);
         env.storage().instance().set(&REQUESTS, &requests);
-        env.storage().instance().set(&REQUEST_COUNTER, &request_id);
+        env.storage()
+            .instance()
+            .set(&REQUEST_COUNTER, &request_id);
 
         // Emit event
         env.events().publish(
@@ -177,11 +200,17 @@ impl P2PEnergyTrading {
         let admin: Address = env.storage().instance().get(&ADMIN).unwrap().unwrap();
         admin.require_auth();
 
-        let offers: Map<u64, EnergyOffer> = env.storage().instance().get(&OFFERS).unwrap().unwrap();
-        let requests: Map<u64, EnergyRequest> = env.storage().instance().get(&REQUESTS).unwrap().unwrap();
+        let mut offers: Map<u64, EnergyOffer> =
+            env.storage().instance().get(&OFFERS).unwrap().unwrap();
+        let mut requests: Map<u64, EnergyRequest> =
+            env.storage().instance().get(&REQUESTS).unwrap().unwrap();
 
-        let mut offer = offers.get(offer_id).unwrap_or_else(|| panic!("offer not found"));
-        let mut request = requests.get(request_id).unwrap_or_else(|| panic!("request not found"));
+        let mut offer = offers
+            .get(offer_id)
+            .unwrap_or_else(|| panic!("offer not found"));
+        let mut request = requests
+            .get(request_id)
+            .unwrap_or_else(|| panic!("request not found"));
 
         // Validate trade
         if offer.status != TradeStatus::Open {
@@ -198,7 +227,12 @@ impl P2PEnergyTrading {
         }
 
         let timestamp = env.ledger().timestamp();
-        let trade_counter: u64 = env.storage().instance().get(&TRADE_COUNTER).unwrap().unwrap();
+        let trade_counter: u64 = env
+            .storage()
+            .instance()
+            .get(&TRADE_COUNTER)
+            .unwrap()
+            .unwrap();
         let trade_id = trade_counter + 1;
 
         // Use the consumer's max price or producer's price (whichever is lower)
@@ -206,12 +240,16 @@ impl P2PEnergyTrading {
         let energy_amount = request.energy_amount_kwh.min(offer.energy_amount_kwh);
         let total_cost = energy_amount.checked_mul(final_price).unwrap();
 
+        // Capture addresses before moving into trade struct
+        let producer_addr = offer.producer_address.clone();
+        let consumer_addr = request.consumer_address.clone();
+
         let trade = TradeExecution {
             trade_id,
             offer_id,
             request_id,
-            producer_address: offer.producer_address.clone(),
-            consumer_address: request.consumer_address.clone(),
+            producer_address: producer_addr.clone(),
+            consumer_address: consumer_addr.clone(),
             energy_amount_kwh: energy_amount,
             price_per_kwh: final_price,
             total_cost,
@@ -223,16 +261,18 @@ impl P2PEnergyTrading {
         offer.status = TradeStatus::Matched;
         request.status = TradeStatus::Matched;
 
-        let mut offers_updated = offers;
-        offers_updated.set(offer_id, offer);
-        env.storage().instance().set(&OFFERS, &offers_updated);
+        offers.set(offer_id, offer);
+        env.storage().instance().set(&OFFERS, &offers);
 
-        let mut requests_updated = requests;
-        requests_updated.set(request_id, request);
-        env.storage().instance().set(&REQUESTS, &requests_updated);
+        requests.set(request_id, request);
+        env.storage().instance().set(&REQUESTS, &requests);
 
         // Store trade
-        let mut trades: Map<u64, TradeExecution> = env.storage().instance().get(&TRADES).unwrap_or_else(|| Map::new(&env));
+        let mut trades: Map<u64, TradeExecution> = env
+            .storage()
+            .instance()
+            .get(&TRADES)
+            .unwrap_or_else(|| Map::new(&env));
         trades.set(trade_id, trade);
         env.storage().instance().set(&TRADES, &trades);
         env.storage().instance().set(&TRADE_COUNTER, &trade_id);
@@ -240,7 +280,7 @@ impl P2PEnergyTrading {
         // Emit event
         env.events().publish(
             (EVT_TRADE_MATCHED, trade_id),
-            (offer.producer_address, request.consumer_address, total_cost),
+            (producer_addr, consumer_addr, total_cost),
         );
 
         trade_id
@@ -251,30 +291,40 @@ impl P2PEnergyTrading {
         let admin: Address = env.storage().instance().get(&ADMIN).unwrap().unwrap();
         admin.require_auth();
 
-        let mut trades: Map<u64, TradeExecution> = env.storage().instance().get(&TRADES).unwrap().unwrap();
-        let mut trade = trades.get(trade_id).unwrap_or_else(|| panic!("trade not found"));
+        let mut trades: Map<u64, TradeExecution> =
+            env.storage().instance().get(&TRADES).unwrap().unwrap();
+        let mut trade = trades
+            .get(trade_id)
+            .unwrap_or_else(|| panic!("trade not found"));
 
         if trade.status != TradeStatus::Matched {
             panic!("trade is not matched");
         }
 
+        // Capture fields before mutating
+        let producer_addr = trade.producer_address.clone();
+        let consumer_addr = trade.consumer_address.clone();
+        let trade_total_cost = trade.total_cost;
+
         trade.status = TradeStatus::Settled;
 
-        let mut trades_updated = trades;
-        trades_updated.set(trade_id, trade);
-        env.storage().instance().set(&TRADES, &trades_updated);
+        trades.set(trade_id, trade);
+        env.storage().instance().set(&TRADES, &trades);
 
         // Emit event
         env.events().publish(
             (EVT_TRADE_SETTLED, trade_id),
-            (trade.producer_address, trade.consumer_address, trade.total_cost),
+            (producer_addr, consumer_addr, trade_total_cost),
         );
     }
 
     /// Cancel offer
     pub fn cancel_offer(env: Env, offer_id: u64) {
-        let offers: Map<u64, EnergyOffer> = env.storage().instance().get(&OFFERS).unwrap().unwrap();
-        let offer = offers.get(offer_id).unwrap_or_else(|| panic!("offer not found"));
+        let offers: Map<u64, EnergyOffer> =
+            env.storage().instance().get(&OFFERS).unwrap().unwrap();
+        let offer = offers
+            .get(offer_id)
+            .unwrap_or_else(|| panic!("offer not found"));
 
         offer.producer_address.require_auth();
 
@@ -291,8 +341,11 @@ impl P2PEnergyTrading {
 
     /// Cancel request
     pub fn cancel_request(env: Env, request_id: u64) {
-        let requests: Map<u64, EnergyRequest> = env.storage().instance().get(&REQUESTS).unwrap().unwrap();
-        let request = requests.get(request_id).unwrap_or_else(|| panic!("request not found"));
+        let requests: Map<u64, EnergyRequest> =
+            env.storage().instance().get(&REQUESTS).unwrap().unwrap();
+        let request = requests
+            .get(request_id)
+            .unwrap_or_else(|| panic!("request not found"));
 
         request.consumer_address.require_auth();
 
@@ -304,35 +357,50 @@ impl P2PEnergyTrading {
         let mut request_updated = request;
         request_updated.status = TradeStatus::Cancelled;
         requests_updated.set(request_id, request_updated);
-        env.storage().instance().set(&REQUESTS, &requests_updated);
+        env.storage()
+            .instance()
+            .set(&REQUESTS, &requests_updated);
     }
 
     /// Get offer
     pub fn get_offer(env: Env, offer_id: u64) -> EnergyOffer {
-        let offers: Map<u64, EnergyOffer> = env.storage().instance().get(&OFFERS).unwrap().unwrap();
-        offers.get(offer_id).unwrap_or_else(|| panic!("offer not found"))
+        let offers: Map<u64, EnergyOffer> =
+            env.storage().instance().get(&OFFERS).unwrap().unwrap();
+        offers
+            .get(offer_id)
+            .unwrap_or_else(|| panic!("offer not found"))
     }
 
     /// Get request
     pub fn get_request(env: Env, request_id: u64) -> EnergyRequest {
-        let requests: Map<u64, EnergyRequest> = env.storage().instance().get(&REQUESTS).unwrap().unwrap();
-        requests.get(request_id).unwrap_or_else(|| panic!("request not found"))
+        let requests: Map<u64, EnergyRequest> =
+            env.storage().instance().get(&REQUESTS).unwrap().unwrap();
+        requests
+            .get(request_id)
+            .unwrap_or_else(|| panic!("request not found"))
     }
 
     /// Get trade
     pub fn get_trade(env: Env, trade_id: u64) -> TradeExecution {
-        let trades: Map<u64, TradeExecution> = env.storage().instance().get(&TRADES).unwrap().unwrap();
-        trades.get(trade_id).unwrap_or_else(|| panic!("trade not found"))
+        let trades: Map<u64, TradeExecution> =
+            env.storage().instance().get(&TRADES).unwrap().unwrap();
+        trades
+            .get(trade_id)
+            .unwrap_or_else(|| panic!("trade not found"))
     }
 
     /// Get open offers
     pub fn get_open_offers(env: Env, limit: u32) -> Vec<EnergyOffer> {
-        let offers: Map<u64, EnergyOffer> = env.storage().instance().get(&OFFERS).unwrap_or_else(|| Map::new(&env));
+        let offers: Map<u64, EnergyOffer> = env
+            .storage()
+            .instance()
+            .get(&OFFERS)
+            .unwrap_or_else(|| Map::new(&env));
         let timestamp = env.ledger().timestamp();
-        
+
         let mut result = Vec::new(&env);
         let mut count = 0;
-        
+
         for (_, offer) in offers.iter() {
             if offer.status == TradeStatus::Open && offer.expiry_timestamp > timestamp {
                 result.push_back(offer);
@@ -342,18 +410,22 @@ impl P2PEnergyTrading {
                 }
             }
         }
-        
+
         result
     }
 
     /// Get open requests
     pub fn get_open_requests(env: Env, limit: u32) -> Vec<EnergyRequest> {
-        let requests: Map<u64, EnergyRequest> = env.storage().instance().get(&REQUESTS).unwrap_or_else(|| Map::new(&env));
+        let requests: Map<u64, EnergyRequest> = env
+            .storage()
+            .instance()
+            .get(&REQUESTS)
+            .unwrap_or_else(|| Map::new(&env));
         let timestamp = env.ledger().timestamp();
-        
+
         let mut result = Vec::new(&env);
         let mut count = 0;
-        
+
         for (_, request) in requests.iter() {
             if request.status == TradeStatus::Open && request.expiry_timestamp > timestamp {
                 result.push_back(request);
@@ -363,17 +435,21 @@ impl P2PEnergyTrading {
                 }
             }
         }
-        
+
         result
     }
 
     /// Get user's trades
     pub fn get_user_trades(env: Env, user_address: Address, limit: u32) -> Vec<TradeExecution> {
-        let trades: Map<u64, TradeExecution> = env.storage().instance().get(&TRADES).unwrap_or_else(|| Map::new(&env));
-        
+        let trades: Map<u64, TradeExecution> = env
+            .storage()
+            .instance()
+            .get(&TRADES)
+            .unwrap_or_else(|| Map::new(&env));
+
         let mut result = Vec::new(&env);
         let mut count = 0;
-        
+
         for (_, trade) in trades.iter() {
             if trade.producer_address == user_address || trade.consumer_address == user_address {
                 result.push_back(trade);
@@ -383,7 +459,7 @@ impl P2PEnergyTrading {
                 }
             }
         }
-        
+
         result
     }
 

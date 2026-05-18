@@ -1,4 +1,5 @@
 #![no_std]
+#![allow(dead_code)]
 use soroban_sdk::{contract, contractimpl, contracttype, Address, Env, Map, String, Vec};
 
 /// Proposal type

@@ -1,5 +1,6 @@
 #![no_std]
-use soroban_sdk::{contract, contractimpl, contracttype, Address, Env, Map, String, Vec};
+#![allow(dead_code)]
+use soroban_sdk::{contract, contractimpl, contracttype, Address, Bytes, Env, Map, Vec};
 
 /// Billing mode
 #[contracttype]
@@ -37,7 +38,7 @@ pub struct Proposal {
     pub proposal_id: u64,
     pub proposal_type: ProposalType,
     pub proposer: Address,
-    pub target_value: soroban_sdk::Bytes,
+    pub target_value: Bytes,
     pub signatures: Vec<Address>,
     pub threshold: u32,
     pub status: ProposalStatus,
@@ -49,12 +50,12 @@ pub struct Proposal {
 #[contracttype]
 #[derive(Clone)]
 pub struct UsageRecord {
-    pub meter_id: soroban_sdk::Bytes,
+    pub meter_id: Bytes,
     pub household_address: Address,
     pub consumption_kwh: u64,
     pub timestamp: u64,
     pub tariff_rate: u64, // in stroops per kWh
-    pub cost: u64, // in stroops
+    pub cost: u64,        // in stroops
     pub subsidy_applied: u64,
     pub final_cost: u64,
 }
@@ -77,7 +78,6 @@ const ADMIN_MULTISIG: soroban_sdk::Symbol = soroban_sdk::symbol!("ADMIN_MULTISIG
 const ADMIN_THRESHOLD: soroban_sdk::Symbol = soroban_sdk::symbol!("ADMIN_THRESHOLD");
 const PROPOSALS: soroban_sdk::Symbol = soroban_sdk::symbol!("PROPOSALS");
 const PROPOSAL_COUNTER: soroban_sdk::Symbol = soroban_sdk::symbol!("PROPOSAL_COUNTER");
-const PENDING_ADMIN_CHANGE: soroban_sdk::Symbol = soroban_sdk::symbol!("PENDING_ADMIN_CHANGE");
 const USAGE_RECORDS: soroban_sdk::Symbol = soroban_sdk::symbol!("USAGE_RECORDS");
 const USAGE_LRU: soroban_sdk::Symbol = soroban_sdk::symbol!("USAGE_LRU");
 const BALANCES: soroban_sdk::Symbol = soroban_sdk::symbol!("BALANCES");
@@ -106,15 +106,21 @@ impl ConsumptionBilling {
             panic!("already initialized");
         }
         env.storage().instance().set(&ADMIN, &admin);
-        env.storage().instance().set(&TARIFF_RATE, &initial_tariff_rate);
-        
+        env.storage()
+            .instance()
+            .set(&TARIFF_RATE, &initial_tariff_rate);
+
         // Initialize multi-sig with single admin by default
         let mut admin_multisig: Vec<Address> = Vec::new(&env);
         admin_multisig.push_back(admin.clone());
-        env.storage().instance().set(&ADMIN_MULTISIG, &admin_multisig);
-        
+        env.storage()
+            .instance()
+            .set(&ADMIN_MULTISIG, &admin_multisig);
+
         // Set threshold (minimum signatures required)
-        env.storage().instance().set(&ADMIN_THRESHOLD, &admin_threshold);
+        env.storage()
+            .instance()
+            .set(&ADMIN_THRESHOLD, &admin_threshold);
     }
 
     /// Add a new admin to multi-sig (requires existing admin approval)
@@ -122,8 +128,12 @@ impl ConsumptionBilling {
         let caller: Address = env.storage().instance().get(&ADMIN).unwrap().unwrap();
         caller.require_auth();
 
-        let mut admin_multisig: Vec<Address> = env.storage().instance().get(&ADMIN_MULTISIG).unwrap_or_else(|| Vec::new(&env));
-        
+        let mut admin_multisig: Vec<Address> = env
+            .storage()
+            .instance()
+            .get(&ADMIN_MULTISIG)
+            .unwrap_or_else(|| Vec::new(&env));
+
         // Check if admin already exists
         for admin in admin_multisig.iter() {
             if admin == new_admin {
@@ -132,7 +142,9 @@ impl ConsumptionBilling {
         }
 
         admin_multisig.push_back(new_admin);
-        env.storage().instance().set(&ADMIN_MULTISIG, &admin_multisig);
+        env.storage()
+            .instance()
+            .set(&ADMIN_MULTISIG, &admin_multisig);
     }
 
     /// Remove an admin from multi-sig (requires existing admin approval)
@@ -140,15 +152,19 @@ impl ConsumptionBilling {
         let caller: Address = env.storage().instance().get(&ADMIN).unwrap().unwrap();
         caller.require_auth();
 
-        let admin_multisig: Vec<Address> = env.storage().instance().get(&ADMIN_MULTISIG).unwrap_or_else(|| Vec::new(&env));
-        
+        let admin_multisig: Vec<Address> = env
+            .storage()
+            .instance()
+            .get(&ADMIN_MULTISIG)
+            .unwrap_or_else(|| Vec::new(&env));
+
         if admin_multisig.len() <= 1 {
             panic!("cannot remove last admin");
         }
 
         let mut new_admin_multisig: Vec<Address> = Vec::new(&env);
         let mut found = false;
-        
+
         for admin in admin_multisig.iter() {
             if admin != admin_to_remove {
                 new_admin_multisig.push_back(admin.clone());
@@ -161,7 +177,9 @@ impl ConsumptionBilling {
             panic!("admin not found");
         }
 
-        env.storage().instance().set(&ADMIN_MULTISIG, &new_admin_multisig);
+        env.storage()
+            .instance()
+            .set(&ADMIN_MULTISIG, &new_admin_multisig);
     }
 
     /// Set admin threshold (minimum signatures required)
@@ -169,25 +187,35 @@ impl ConsumptionBilling {
         let caller: Address = env.storage().instance().get(&ADMIN).unwrap().unwrap();
         caller.require_auth();
 
-        let admin_multisig: Vec<Address> = env.storage().instance().get(&ADMIN_MULTISIG).unwrap_or_else(|| Vec::new(&env));
-        
+        let admin_multisig: Vec<Address> = env
+            .storage()
+            .instance()
+            .get(&ADMIN_MULTISIG)
+            .unwrap_or_else(|| Vec::new(&env));
+
         if threshold == 0 || threshold > admin_multisig.len() as u32 {
             panic!("invalid threshold");
         }
 
-        env.storage().instance().set(&ADMIN_THRESHOLD, &threshold);
+        env.storage()
+            .instance()
+            .set(&ADMIN_THRESHOLD, &threshold);
     }
 
     /// Check if caller is authorized admin
     fn is_authorized_admin(env: &Env, caller: &Address) -> bool {
-        let admin_multisig: Vec<Address> = env.storage().instance().get(&ADMIN_MULTISIG).unwrap_or_else(|| Vec::new(env));
-        
+        let admin_multisig: Vec<Address> = env
+            .storage()
+            .instance()
+            .get(&ADMIN_MULTISIG)
+            .unwrap_or_else(|| Vec::new(env));
+
         for admin in admin_multisig.iter() {
-            if admin == caller {
+            if admin == *caller {
                 return true;
             }
         }
-        
+
         false
     }
 
@@ -212,7 +240,9 @@ impl ConsumptionBilling {
             panic!("unauthorized admin");
         }
 
-        env.storage().instance().set(&SUBSIDY_CONTRACT, &subsidy_contract);
+        env.storage()
+            .instance()
+            .set(&SUBSIDY_CONTRACT, &subsidy_contract);
     }
 
     /// Set settlement contract address (admin only with multi-sig check)
@@ -224,22 +254,33 @@ impl ConsumptionBilling {
             panic!("unauthorized admin");
         }
 
-        env.storage().instance().set(&BILLING_CONTRACT, &settlement_contract);
+        env.storage()
+            .instance()
+            .set(&BILLING_CONTRACT, &settlement_contract);
     }
 
     /// Register household for billing
-    pub fn register_household(env: Env, household_address: Address, billing_mode: BillingMode, initial_balance: i64) {
+    pub fn register_household(
+        env: Env,
+        household_address: Address,
+        billing_mode: BillingMode,
+        initial_balance: i64,
+    ) {
         let admin: Address = env.storage().instance().get(&ADMIN).unwrap().unwrap();
         admin.require_auth();
 
-        let balances: Map<Address, BalanceInfo> = env.storage().instance().get(&BALANCES).unwrap_or_else(|| Map::new(&env));
-        
+        let balances: Map<Address, BalanceInfo> = env
+            .storage()
+            .instance()
+            .get(&BALANCES)
+            .unwrap_or_else(|| Map::new(&env));
+
         if balances.contains_key(&household_address) {
             panic!("household already registered");
         }
 
         let timestamp = env.ledger().timestamp();
-        
+
         let balance_info = BalanceInfo {
             household_address: household_address.clone(),
             current_balance: initial_balance,
@@ -251,13 +292,15 @@ impl ConsumptionBilling {
 
         let mut balances_updated = balances;
         balances_updated.set(household_address, balance_info);
-        env.storage().instance().set(&BALANCES, &balances_updated);
+        env.storage()
+            .instance()
+            .set(&BALANCES, &balances_updated);
     }
 
     /// Record energy usage and deduct balance with gas optimizations and LRU eviction
     pub fn record_usage(
         env: Env,
-        meter_id: soroban_sdk::Bytes,
+        meter_id: Bytes,
         household_address: Address,
         consumption_kwh: u64,
     ) -> UsageRecord {
@@ -269,16 +312,23 @@ impl ConsumptionBilling {
         let admin: Address = env.storage().instance().get(&ADMIN).unwrap().unwrap();
         admin.require_auth();
 
-        let tariff_rate: u64 = env.storage().instance().get(&TARIFF_RATE).unwrap().unwrap();
-        
-        let cost = consumption_kwh.checked_mul(tariff_rate).unwrap_or_else(|| panic!("arithmetic overflow in cost calculation"));
-        
+        let tariff_rate: u64 = env
+            .storage()
+            .instance()
+            .get(&TARIFF_RATE)
+            .unwrap()
+            .unwrap();
+
+        let cost = consumption_kwh
+            .checked_mul(tariff_rate)
+            .unwrap_or_else(|| panic!("arithmetic overflow in cost calculation"));
+
         let subsidy_applied = if env.storage().instance().has(&SUBSIDY_CONTRACT) {
             0
         } else {
             0
         };
-        
+
         let final_cost = cost.saturating_sub(subsidy_applied);
 
         let timestamp = env.ledger().timestamp();
@@ -294,49 +344,79 @@ impl ConsumptionBilling {
             final_cost,
         };
 
-        let mut usage_records: Map<(soroban_sdk::Bytes, u64), UsageRecord> = env.storage().instance().get(&USAGE_RECORDS).unwrap_or_else(|| Map::new(&env));
-        
+        let mut usage_records: Map<(Bytes, u64), UsageRecord> = env
+            .storage()
+            .instance()
+            .get(&USAGE_RECORDS)
+            .unwrap_or_else(|| Map::new(&env));
+
         const MAX_RECORDS: u32 = 1000;
-        
-        if usage_records.len() >= MAX_RECORDS as u32 {
-            let lru_list: Vec<(soroban_sdk::Bytes, u64)> = env.storage().instance().get(&USAGE_LRU).unwrap_or_else(|| Vec::new(&env));
-            
-            if lru_list.len() > 0 {
+
+        if usage_records.len() >= MAX_RECORDS {
+            let lru_list: Vec<(Bytes, u64)> = env
+                .storage()
+                .instance()
+                .get(&USAGE_LRU)
+                .unwrap_or_else(|| Vec::new(&env));
+
+            if !lru_list.is_empty() {
                 let lru_key = lru_list.first().unwrap();
                 usage_records.remove(lru_key);
-                
-                let mut new_lru: Vec<(soroban_sdk::Bytes, u64)> = Vec::new(&env);
-                for (i, key) in lru_list.iter().enumerate() {
-                    if i > 0 {
-                        new_lru.push_back(key.clone());
-                    }
+
+                let mut new_lru: Vec<(Bytes, u64)> = Vec::new(&env);
+                // Skip the first element (index 0) by iterating from index 1
+                let lru_len = lru_list.len();
+                let mut idx: u32 = 1;
+                while idx < lru_len {
+                    new_lru.push_back(lru_list.get(idx).unwrap());
+                    idx += 1;
                 }
                 env.storage().instance().set(&USAGE_LRU, &new_lru);
             }
         }
-        
+
         usage_records.set((meter_id.clone(), timestamp), usage_record.clone());
-        env.storage().instance().set(&USAGE_RECORDS, &usage_records);
-        
-        let mut lru_list: Vec<(soroban_sdk::Bytes, u64)> = env.storage().instance().get(&USAGE_LRU).unwrap_or_else(|| Vec::new(&env));
+        env.storage()
+            .instance()
+            .set(&USAGE_RECORDS, &usage_records);
+
+        let mut lru_list: Vec<(Bytes, u64)> = env
+            .storage()
+            .instance()
+            .get(&USAGE_LRU)
+            .unwrap_or_else(|| Vec::new(&env));
         lru_list.push_back((meter_id.clone(), timestamp));
         env.storage().instance().set(&USAGE_LRU, &lru_list);
 
-        let balances: Map<Address, BalanceInfo> = env.storage().instance().get(&BALANCES).unwrap().unwrap();
-        let mut balance_info = balances.get(household_address.clone()).unwrap_or_else(|| panic!("household not registered"));
-        
-        balance_info.current_balance = balance_info.current_balance.saturating_sub(final_cost as i64);
-        balance_info.total_consumption = balance_info.total_consumption.checked_add(consumption_kwh).unwrap_or_else(|| panic!("arithmetic overflow in total consumption"));
+        let balances: Map<Address, BalanceInfo> = env
+            .storage()
+            .instance()
+            .get(&BALANCES)
+            .unwrap()
+            .unwrap();
+        let mut balance_info = balances
+            .get(household_address.clone())
+            .unwrap_or_else(|| panic!("household not registered"));
+
+        balance_info.current_balance = balance_info
+            .current_balance
+            .saturating_sub(final_cost as i64);
+        balance_info.total_consumption = balance_info
+            .total_consumption
+            .checked_add(consumption_kwh)
+            .unwrap_or_else(|| panic!("arithmetic overflow in total consumption"));
 
         let mut balances_updated = balances;
         balances_updated.set(household_address.clone(), balance_info);
-        env.storage().instance().set(&BALANCES, &balances_updated);
+        env.storage()
+            .instance()
+            .set(&BALANCES, &balances_updated);
 
         env.events().publish(
             (EVT_USAGE_RECORDED, household_address.clone()),
             (meter_id, consumption_kwh, final_cost),
         );
-        
+
         env.events().publish(
             (EVT_BALANCE_DEDUCTED, household_address),
             final_cost,
@@ -358,22 +438,28 @@ impl ConsumptionBilling {
         let admin: Address = env.storage().instance().get(&ADMIN).unwrap().unwrap();
         admin.require_auth();
 
-        let balances: Map<Address, BalanceInfo> = env.storage().instance().get(&BALANCES).unwrap().unwrap();
-        let mut balance_info = balances.get(household_address.clone()).unwrap_or_else(|| panic!("household not registered"));
-        
+        let balances: Map<Address, BalanceInfo> =
+            env.storage().instance().get(&BALANCES).unwrap().unwrap();
+        let mut balance_info = balances
+            .get(household_address.clone())
+            .unwrap_or_else(|| panic!("household not registered"));
+
         // Saturating operations to prevent overflow/underflow
         balance_info.current_balance = balance_info.current_balance.saturating_add(amount);
-        balance_info.total_paid = balance_info.total_paid.checked_add(amount as u64).unwrap_or_else(|| panic!("arithmetic overflow in total paid"));
+        balance_info.total_paid = balance_info
+            .total_paid
+            .checked_add(amount as u64)
+            .unwrap_or_else(|| panic!("arithmetic overflow in total paid"));
 
         let mut balances_updated = balances;
         balances_updated.set(household_address.clone(), balance_info);
-        env.storage().instance().set(&BALANCES, &balances_updated);
+        env.storage()
+            .instance()
+            .set(&BALANCES, &balances_updated);
 
         // Emit event
-        env.events().publish(
-            (EVT_BALANCE_ADDED, household_address),
-            amount,
-        );
+        env.events()
+            .publish((EVT_BALANCE_ADDED, household_address), amount);
 
         // Clear reentrancy guard
         env.storage().instance().remove(&REENTRANCY_GUARD);
@@ -381,17 +467,24 @@ impl ConsumptionBilling {
 
     /// Get balance information
     pub fn get_balance(env: Env, household_address: Address) -> BalanceInfo {
-        let balances: Map<Address, BalanceInfo> = env.storage().instance().get(&BALANCES).unwrap().unwrap();
-        balances.get(household_address).unwrap_or_else(|| panic!("household not registered"))
+        let balances: Map<Address, BalanceInfo> =
+            env.storage().instance().get(&BALANCES).unwrap().unwrap();
+        balances
+            .get(household_address)
+            .unwrap_or_else(|| panic!("household not registered"))
     }
 
     /// Get usage records for a meter
-    pub fn get_meter_usage(env: Env, meter_id: soroban_sdk::Bytes, limit: u32) -> Vec<UsageRecord> {
-        let usage_records: Map<(soroban_sdk::Bytes, u64), UsageRecord> = env.storage().instance().get(&USAGE_RECORDS).unwrap_or_else(|| Map::new(&env));
-        
+    pub fn get_meter_usage(env: Env, meter_id: Bytes, limit: u32) -> Vec<UsageRecord> {
+        let usage_records: Map<(Bytes, u64), UsageRecord> = env
+            .storage()
+            .instance()
+            .get(&USAGE_RECORDS)
+            .unwrap_or_else(|| Map::new(&env));
+
         let mut result = Vec::new(&env);
         let mut count = 0;
-        
+
         for (key, record) in usage_records.iter() {
             if key.0 == meter_id {
                 result.push_back(record);
@@ -401,19 +494,26 @@ impl ConsumptionBilling {
                 }
             }
         }
-        
+
         result
     }
 
     /// Get current tariff rate
     pub fn get_tariff_rate(env: Env) -> u64 {
-        env.storage().instance().get(&TARIFF_RATE).unwrap().unwrap()
+        env.storage()
+            .instance()
+            .get(&TARIFF_RATE)
+            .unwrap()
+            .unwrap()
     }
 
     /// Check if household has sufficient balance
     pub fn check_balance(env: Env, household_address: Address, required_amount: u64) -> bool {
-        let balances: Map<Address, BalanceInfo> = env.storage().instance().get(&BALANCES).unwrap().unwrap();
-        let balance_info = balances.get(household_address).unwrap_or_else(|| panic!("household not registered"));
+        let balances: Map<Address, BalanceInfo> =
+            env.storage().instance().get(&BALANCES).unwrap().unwrap();
+        let balance_info = balances
+            .get(household_address)
+            .unwrap_or_else(|| panic!("household not registered"));
         balance_info.current_balance >= required_amount as i64
     }
 
@@ -423,17 +523,14 @@ impl ConsumptionBilling {
         admin.require_auth();
 
         let timestamp = env.ledger().timestamp();
-        
+
         // In a real implementation, this would:
         // 1. Calculate total consumption for all households
         // 2. Apply subsidies
         // 3. Generate invoices for postpaid customers
         // 4. Trigger settlement for prepaid customers
-        
-        env.events().publish(
-            EVT_BILLING_CYCLE,
-            timestamp,
-        );
+
+        env.events().publish((EVT_BILLING_CYCLE,), timestamp);
     }
 
     /// Get admin address
@@ -446,18 +543,28 @@ impl ConsumptionBilling {
         env: Env,
         proposer: Address,
         proposal_type: ProposalType,
-        target_value: soroban_sdk::Bytes,
+        target_value: Bytes,
         duration: u64,
     ) -> Proposal {
         if !Self::is_authorized_admin(&env, &proposer) {
             panic!("unauthorized: proposer must be an admin");
         }
 
-        let counter: u64 = env.storage().instance().get(&PROPOSAL_COUNTER).unwrap_or(0);
+        let counter: u64 = env
+            .storage()
+            .instance()
+            .get(&PROPOSAL_COUNTER)
+            .unwrap_or(0);
         let proposal_id = counter + 1;
-        env.storage().instance().set(&PROPOSAL_COUNTER, &proposal_id);
+        env.storage()
+            .instance()
+            .set(&PROPOSAL_COUNTER, &proposal_id);
 
-        let admin_threshold: u32 = env.storage().instance().get(&ADMIN_THRESHOLD).unwrap_or(1);
+        let admin_threshold: u32 = env
+            .storage()
+            .instance()
+            .get(&ADMIN_THRESHOLD)
+            .unwrap_or(1);
 
         let timestamp = env.ledger().timestamp();
         let proposal = Proposal {
@@ -472,7 +579,11 @@ impl ConsumptionBilling {
             expires_at: timestamp + duration,
         };
 
-        let mut proposals: Map<u64, Proposal> = env.storage().instance().get(&PROPOSALS).unwrap_or_else(|| Map::new(&env));
+        let mut proposals: Map<u64, Proposal> = env
+            .storage()
+            .instance()
+            .get(&PROPOSALS)
+            .unwrap_or_else(|| Map::new(&env));
         proposals.set(proposal_id, proposal.clone());
         env.storage().instance().set(&PROPOSALS, &proposals);
 
@@ -490,8 +601,14 @@ impl ConsumptionBilling {
             panic!("unauthorized: signer must be an admin");
         }
 
-        let mut proposals: Map<u64, Proposal> = env.storage().instance().get(&PROPOSALS).unwrap_or_else(|| Map::new(&env));
-        let mut proposal = proposals.get(proposal_id).unwrap_or_else(|| panic!("proposal not found"));
+        let mut proposals: Map<u64, Proposal> = env
+            .storage()
+            .instance()
+            .get(&PROPOSALS)
+            .unwrap_or_else(|| Map::new(&env));
+        let mut proposal = proposals
+            .get(proposal_id)
+            .unwrap_or_else(|| panic!("proposal not found"));
 
         if proposal.status != ProposalStatus::Pending {
             panic!("proposal is not pending");
@@ -506,14 +623,14 @@ impl ConsumptionBilling {
         }
 
         for sig in proposal.signatures.iter() {
-            if sig == &signer {
+            if sig == signer {
                 panic!("already signed");
             }
         }
 
         proposal.signatures.push_back(signer.clone());
 
-        if proposal.signatures.len() >= proposal.threshold as usize {
+        if proposal.signatures.len() >= proposal.threshold {
             proposal.status = ProposalStatus::Approved;
         }
 
@@ -532,8 +649,14 @@ impl ConsumptionBilling {
             panic!("unauthorized: executor must be an admin");
         }
 
-        let mut proposals: Map<u64, Proposal> = env.storage().instance().get(&PROPOSALS).unwrap_or_else(|| Map::new(&env));
-        let mut proposal = proposals.get(proposal_id).unwrap_or_else(|| panic!("proposal not found"));
+        let mut proposals: Map<u64, Proposal> = env
+            .storage()
+            .instance()
+            .get(&PROPOSALS)
+            .unwrap_or_else(|| Map::new(&env));
+        let mut proposal = proposals
+            .get(proposal_id)
+            .unwrap_or_else(|| panic!("proposal not found"));
 
         if proposal.status != ProposalStatus::Approved {
             panic!("proposal is not approved");
@@ -541,20 +664,41 @@ impl ConsumptionBilling {
 
         match proposal.proposal_type {
             ProposalType::TariffChange => {
-                let new_rate = u64::from_be_bytes(proposal.target_value.to_array().try_into().unwrap());
+                // Decode 8-byte big-endian u64 from Bytes
+                let bytes = proposal.target_value.clone();
+                if bytes.len() < 8 {
+                    panic!("invalid target value length for TariffChange");
+                }
+                let mut arr = [0u8; 8];
+                for i in 0..8u32 {
+                    arr[i as usize] = bytes.get(i).unwrap();
+                }
+                let new_rate = u64::from_be_bytes(arr);
                 env.storage().instance().set(&TARIFF_RATE, &new_rate);
-            },
+            }
             ProposalType::AdminChange => {
-                let new_admin = Address::from_scval(&soroban_sdk::ScVal::from_bytes(&proposal.target_value));
-                env.storage().instance().set(&ADMIN, &new_admin);
-            },
+                // AdminChange: store raw bytes as new admin key (placeholder)
+                // In production, encode/decode Address properly via XDR
+                panic!("AdminChange execution not supported in this version");
+            }
             ProposalType::ThresholdChange => {
-                let new_threshold = u32::from_be_bytes(proposal.target_value.to_array().try_into().unwrap());
-                env.storage().instance().set(&ADMIN_THRESHOLD, &new_threshold);
-            },
+                // Decode 4-byte big-endian u32 from Bytes
+                let bytes = proposal.target_value.clone();
+                if bytes.len() < 4 {
+                    panic!("invalid target value length for ThresholdChange");
+                }
+                let mut arr = [0u8; 4];
+                for i in 0..4u32 {
+                    arr[i as usize] = bytes.get(i).unwrap();
+                }
+                let new_threshold = u32::from_be_bytes(arr);
+                env.storage()
+                    .instance()
+                    .set(&ADMIN_THRESHOLD, &new_threshold);
+            }
             ProposalType::ContractUpgrade => {
                 panic!("contract upgrade not implemented");
-            },
+            }
         }
 
         proposal.status = ProposalStatus::Executed;
@@ -569,13 +713,23 @@ impl ConsumptionBilling {
 
     /// Get proposal by ID
     pub fn get_proposal(env: Env, proposal_id: u64) -> Proposal {
-        let proposals: Map<u64, Proposal> = env.storage().instance().get(&PROPOSALS).unwrap_or_else(|| Map::new(&env));
-        proposals.get(proposal_id).unwrap_or_else(|| panic!("proposal not found"))
+        let proposals: Map<u64, Proposal> = env
+            .storage()
+            .instance()
+            .get(&PROPOSALS)
+            .unwrap_or_else(|| Map::new(&env));
+        proposals
+            .get(proposal_id)
+            .unwrap_or_else(|| panic!("proposal not found"))
     }
 
     /// Get all proposals
     pub fn get_all_proposals(env: Env) -> Vec<Proposal> {
-        let proposals: Map<u64, Proposal> = env.storage().instance().get(&PROPOSALS).unwrap_or_else(|| Map::new(&env));
+        let proposals: Map<u64, Proposal> = env
+            .storage()
+            .instance()
+            .get(&PROPOSALS)
+            .unwrap_or_else(|| Map::new(&env));
         let mut result = Vec::new(&env);
         for (_, proposal) in proposals.iter() {
             result.push_back(proposal);

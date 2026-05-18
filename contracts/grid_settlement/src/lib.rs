@@ -1,5 +1,6 @@
 #![no_std]
-use soroban_sdk::{contract, contractimpl, contracttype, Address, Env, Map, String, Vec};
+#![allow(dead_code)]
+use soroban_sdk::{contract, contractimpl, contracttype, Address, Bytes, Env, Map, String, Vec};
 
 /// Settlement status
 #[contracttype]
@@ -58,7 +59,6 @@ const FAILED_SETTLEMENTS: soroban_sdk::Symbol = soroban_sdk::symbol!("FAILED_SET
 
 /// Events
 const EVT_SETTLEMENT_CREATED: soroban_sdk::Symbol = soroban_sdk::symbol!("SETTLEMENT_CREATED");
-const EVT_SETTLEMENT_PROCESSING: soroban_sdk::Symbol = soroban_sdk::symbol!("SETTLEMENT_PROCESSING");
 const EVT_SETTLEMENT_COMPLETED: soroban_sdk::Symbol = soroban_sdk::symbol!("SETTLEMENT_COMPLETED");
 const EVT_SETTLEMENT_FAILED: soroban_sdk::Symbol = soroban_sdk::symbol!("SETTLEMENT_FAILED");
 
@@ -73,25 +73,37 @@ impl GridSettlement {
             panic!("already initialized");
         }
         env.storage().instance().set(&ADMIN, &admin);
-        env.storage().instance().set(&ANCHOR_ADDRESS, &anchor_address);
-        env.storage().instance().set(&TOKEN_ADDRESS, &token_address);
-        env.storage().instance().set(&SETTLEMENT_COUNTER, &0u64);
+        env.storage()
+            .instance()
+            .set(&ANCHOR_ADDRESS, &anchor_address);
+        env.storage()
+            .instance()
+            .set(&TOKEN_ADDRESS, &token_address);
+        env.storage()
+            .instance()
+            .set(&SETTLEMENT_COUNTER, &0u64);
         env.storage().instance().set(&TOTAL_SETTLED, &0u64);
-        env.storage().instance().set(&FAILED_SETTLEMENTS, &0u64);
+        env.storage()
+            .instance()
+            .set(&FAILED_SETTLEMENTS, &0u64);
     }
 
     /// Set anchor address
     pub fn set_anchor_address(env: Env, anchor_address: Address) {
         let admin: Address = env.storage().instance().get(&ADMIN).unwrap().unwrap();
         admin.require_auth();
-        env.storage().instance().set(&ANCHOR_ADDRESS, &anchor_address);
+        env.storage()
+            .instance()
+            .set(&ANCHOR_ADDRESS, &anchor_address);
     }
 
     /// Set token address
     pub fn set_token_address(env: Env, token_address: Address) {
         let admin: Address = env.storage().instance().get(&ADMIN).unwrap().unwrap();
         admin.require_auth();
-        env.storage().instance().set(&TOKEN_ADDRESS, &token_address);
+        env.storage()
+            .instance()
+            .set(&TOKEN_ADDRESS, &token_address);
     }
 
     /// Create a settlement record
@@ -107,7 +119,12 @@ impl GridSettlement {
         let admin: Address = env.storage().instance().get(&ADMIN).unwrap().unwrap();
         admin.require_auth();
 
-        let settlement_counter: u64 = env.storage().instance().get(&SETTLEMENT_COUNTER).unwrap().unwrap();
+        let settlement_counter: u64 = env
+            .storage()
+            .instance()
+            .get(&SETTLEMENT_COUNTER)
+            .unwrap()
+            .unwrap();
         let settlement_id = settlement_counter + 1;
 
         let timestamp = env.ledger().timestamp();
@@ -126,9 +143,15 @@ impl GridSettlement {
         };
 
         // Store settlement record
-        let mut settlements: Map<u64, SettlementRecord> = env.storage().instance().get(&SETTLEMENTS).unwrap_or_else(|| Map::new(&env));
+        let mut settlements: Map<u64, SettlementRecord> = env
+            .storage()
+            .instance()
+            .get(&SETTLEMENTS)
+            .unwrap_or_else(|| Map::new(&env));
         settlements.set(settlement_id, settlement);
-        env.storage().instance().set(&SETTLEMENTS, &settlements);
+        env.storage()
+            .instance()
+            .set(&SETTLEMENTS, &settlements);
 
         // Add to pending queue
         let pending_settlement = PendingSettlement {
@@ -137,11 +160,19 @@ impl GridSettlement {
             max_retries: 3,
         };
 
-        let mut pending_queue: Vec<PendingSettlement> = env.storage().instance().get(&PENDING_QUEUE).unwrap_or_else(|| Vec::new(&env));
+        let mut pending_queue: Vec<PendingSettlement> = env
+            .storage()
+            .instance()
+            .get(&PENDING_QUEUE)
+            .unwrap_or_else(|| Vec::new(&env));
         pending_queue.push_back(pending_settlement);
-        env.storage().instance().set(&PENDING_QUEUE, &pending_queue);
+        env.storage()
+            .instance()
+            .set(&PENDING_QUEUE, &pending_queue);
 
-        env.storage().instance().set(&SETTLEMENT_COUNTER, &settlement_id);
+        env.storage()
+            .instance()
+            .set(&SETTLEMENT_COUNTER, &settlement_id);
 
         // Emit event
         env.events().publish(
@@ -157,8 +188,11 @@ impl GridSettlement {
         let admin: Address = env.storage().instance().get(&ADMIN).unwrap().unwrap();
         admin.require_auth();
 
-        let mut pending_queue: Vec<PendingSettlement> = env.storage().instance().get(&PENDING_QUEUE).unwrap_or_else(|| Vec::new(&env));
-        let settlements: Map<u64, SettlementRecord> = env.storage().instance().get(&SETTLEMENTS).unwrap().unwrap();
+        let mut pending_queue: Vec<PendingSettlement> = env
+            .storage()
+            .instance()
+            .get(&PENDING_QUEUE)
+            .unwrap_or_else(|| Vec::new(&env));
 
         let mut processed = Vec::new(&env);
         let mut remaining = Vec::new(&env);
@@ -170,7 +204,16 @@ impl GridSettlement {
                 continue;
             }
 
-            let mut settlement = settlements.get(pending.settlement_id).unwrap_or_else(|| panic!("settlement not found"));
+            let mut settlements: Map<u64, SettlementRecord> = env
+                .storage()
+                .instance()
+                .get(&SETTLEMENTS)
+                .unwrap()
+                .unwrap();
+
+            let mut settlement = settlements
+                .get(pending.settlement_id)
+                .unwrap_or_else(|| panic!("settlement not found"));
 
             if settlement.status != SettlementStatus::Pending {
                 continue;
@@ -178,10 +221,10 @@ impl GridSettlement {
 
             // Mark as processing
             settlement.status = SettlementStatus::Processing;
-
-            let mut settlements_updated = settlements;
-            settlements_updated.set(pending.settlement_id, settlement.clone());
-            env.storage().instance().set(&SETTLEMENTS, &settlements_updated);
+            settlements.set(pending.settlement_id, settlement.clone());
+            env.storage()
+                .instance()
+                .set(&SETTLEMENTS, &settlements);
 
             // In a real implementation, this would:
             // 1. Execute the Stellar payment transaction
@@ -189,16 +232,35 @@ impl GridSettlement {
             // 3. Update settlement status based on result
 
             // For now, simulate successful settlement
+            let mut settlements2: Map<u64, SettlementRecord> = env
+                .storage()
+                .instance()
+                .get(&SETTLEMENTS)
+                .unwrap()
+                .unwrap();
             settlement.status = SettlementStatus::Completed;
-            settlement.transaction_hash = Some(Bytes::from_slice(&env, b"simulated_tx_hash"));
+            settlement.transaction_hash =
+                Some(Bytes::from_slice(&env, b"simulated_tx_hash"));
 
-            let mut settlements_final = settlements_updated;
-            settlements_final.set(pending.settlement_id, settlement.clone());
-            env.storage().instance().set(&SETTLEMENTS, &settlements_final);
+            let settlement_amount = settlement.amount;
+            let settlement_from = settlement.from_address.clone();
+            let settlement_to = settlement.to_address.clone();
+
+            settlements2.set(pending.settlement_id, settlement);
+            env.storage()
+                .instance()
+                .set(&SETTLEMENTS, &settlements2);
 
             // Update total settled
-            let total_settled: u64 = env.storage().instance().get(&TOTAL_SETTLED).unwrap().unwrap();
-            env.storage().instance().set(&TOTAL_SETTLED, &(total_settled.saturating_add(settlement.amount)));
+            let total_settled: u64 = env
+                .storage()
+                .instance()
+                .get(&TOTAL_SETTLED)
+                .unwrap()
+                .unwrap();
+            env.storage()
+                .instance()
+                .set(&TOTAL_SETTLED, &(total_settled.saturating_add(settlement_amount)));
 
             processed.push_back(pending.settlement_id);
             count += 1;
@@ -206,12 +268,15 @@ impl GridSettlement {
             // Emit event
             env.events().publish(
                 (EVT_SETTLEMENT_COMPLETED, pending.settlement_id),
-                (settlement.from_address, settlement.to_address, settlement.amount),
+                (settlement_from, settlement_to, settlement_amount),
             );
         }
 
         // Update pending queue with remaining items
-        env.storage().instance().set(&PENDING_QUEUE, &remaining);
+        pending_queue = remaining;
+        env.storage()
+            .instance()
+            .set(&PENDING_QUEUE, &pending_queue);
 
         processed
     }
@@ -221,25 +286,35 @@ impl GridSettlement {
         let admin: Address = env.storage().instance().get(&ADMIN).unwrap().unwrap();
         admin.require_auth();
 
-        let settlements: Map<u64, SettlementRecord> = env.storage().instance().get(&SETTLEMENTS).unwrap().unwrap();
-        let mut settlement = settlements.get(settlement_id).unwrap_or_else(|| panic!("settlement not found"));
+        let settlements: Map<u64, SettlementRecord> =
+            env.storage().instance().get(&SETTLEMENTS).unwrap().unwrap();
+        let mut settlement = settlements
+            .get(settlement_id)
+            .unwrap_or_else(|| panic!("settlement not found"));
 
         settlement.status = SettlementStatus::Failed;
         settlement.retry_count += 1;
 
         let mut settlements_updated = settlements;
-        settlements_updated.set(settlement_id, settlement.clone());
-        env.storage().instance().set(&SETTLEMENTS, &settlements_updated);
+        settlements_updated.set(settlement_id, settlement);
+        env.storage()
+            .instance()
+            .set(&SETTLEMENTS, &settlements_updated);
 
         // Update failed count
-        let failed_count: u64 = env.storage().instance().get(&FAILED_SETTLEMENTS).unwrap().unwrap();
-        env.storage().instance().set(&FAILED_SETTLEMENTS, &(failed_count + 1));
+        let failed_count: u64 = env
+            .storage()
+            .instance()
+            .get(&FAILED_SETTLEMENTS)
+            .unwrap()
+            .unwrap();
+        env.storage()
+            .instance()
+            .set(&FAILED_SETTLEMENTS, &(failed_count + 1));
 
         // Emit event
-        env.events().publish(
-            (EVT_SETTLEMENT_FAILED, settlement_id),
-            reason,
-        );
+        env.events()
+            .publish((EVT_SETTLEMENT_FAILED, settlement_id), reason);
     }
 
     /// Retry failed settlement
@@ -247,8 +322,11 @@ impl GridSettlement {
         let admin: Address = env.storage().instance().get(&ADMIN).unwrap().unwrap();
         admin.require_auth();
 
-        let settlements: Map<u64, SettlementRecord> = env.storage().instance().get(&SETTLEMENTS).unwrap().unwrap();
-        let settlement = settlements.get(settlement_id).unwrap_or_else(|| panic!("settlement not found"));
+        let settlements: Map<u64, SettlementRecord> =
+            env.storage().instance().get(&SETTLEMENTS).unwrap().unwrap();
+        let settlement = settlements
+            .get(settlement_id)
+            .unwrap_or_else(|| panic!("settlement not found"));
 
         if settlement.status != SettlementStatus::Failed {
             panic!("settlement is not in failed state");
@@ -264,7 +342,9 @@ impl GridSettlement {
 
         let mut settlements_updated = settlements;
         settlements_updated.set(settlement_id, settlement_updated);
-        env.storage().instance().set(&SETTLEMENTS, &settlements_updated);
+        env.storage()
+            .instance()
+            .set(&SETTLEMENTS, &settlements_updated);
 
         // Add back to pending queue
         let pending_settlement = PendingSettlement {
@@ -273,24 +353,38 @@ impl GridSettlement {
             max_retries: 3,
         };
 
-        let mut pending_queue: Vec<PendingSettlement> = env.storage().instance().get(&PENDING_QUEUE).unwrap_or_else(|| Vec::new(&env));
+        let mut pending_queue: Vec<PendingSettlement> = env
+            .storage()
+            .instance()
+            .get(&PENDING_QUEUE)
+            .unwrap_or_else(|| Vec::new(&env));
         pending_queue.push_back(pending_settlement);
-        env.storage().instance().set(&PENDING_QUEUE, &pending_queue);
+        env.storage()
+            .instance()
+            .set(&PENDING_QUEUE, &pending_queue);
     }
 
     /// Get settlement record
     pub fn get_settlement(env: Env, settlement_id: u64) -> SettlementRecord {
-        let settlements: Map<u64, SettlementRecord> = env.storage().instance().get(&SETTLEMENTS).unwrap().unwrap();
-        settlements.get(settlement_id).unwrap_or_else(|| panic!("settlement not found"))
+        let settlements: Map<u64, SettlementRecord> =
+            env.storage().instance().get(&SETTLEMENTS).unwrap().unwrap();
+        settlements
+            .get(settlement_id)
+            .unwrap_or_else(|| panic!("settlement not found"))
     }
 
     /// Get settlements by reference ID
-    pub fn get_settlements_by_reference(env: Env, reference_id: String, limit: u32) -> Vec<SettlementRecord> {
-        let settlements: Map<u64, SettlementRecord> = env.storage().instance().get(&SETTLEMENTS).unwrap().unwrap();
-        
+    pub fn get_settlements_by_reference(
+        env: Env,
+        reference_id: String,
+        limit: u32,
+    ) -> Vec<SettlementRecord> {
+        let settlements: Map<u64, SettlementRecord> =
+            env.storage().instance().get(&SETTLEMENTS).unwrap().unwrap();
+
         let mut result = Vec::new(&env);
         let mut count = 0;
-        
+
         for (_, settlement) in settlements.iter() {
             if settlement.reference_id == reference_id {
                 result.push_back(settlement);
@@ -300,17 +394,22 @@ impl GridSettlement {
                 }
             }
         }
-        
+
         result
     }
 
     /// Get settlements by address
-    pub fn get_settlements_by_address(env: Env, address: Address, limit: u32) -> Vec<SettlementRecord> {
-        let settlements: Map<u64, SettlementRecord> = env.storage().instance().get(&SETTLEMENTS).unwrap().unwrap();
-        
+    pub fn get_settlements_by_address(
+        env: Env,
+        address: Address,
+        limit: u32,
+    ) -> Vec<SettlementRecord> {
+        let settlements: Map<u64, SettlementRecord> =
+            env.storage().instance().get(&SETTLEMENTS).unwrap().unwrap();
+
         let mut result = Vec::new(&env);
         let mut count = 0;
-        
+
         for (_, settlement) in settlements.iter() {
             if settlement.from_address == address || settlement.to_address == address {
                 result.push_back(settlement);
@@ -320,33 +419,60 @@ impl GridSettlement {
                 }
             }
         }
-        
+
         result
     }
 
     /// Get pending settlement count
     pub fn get_pending_count(env: Env) -> u32 {
-        let pending_queue: Vec<PendingSettlement> = env.storage().instance().get(&PENDING_QUEUE).unwrap_or_else(|| Vec::new(&env));
+        let pending_queue: Vec<PendingSettlement> = env
+            .storage()
+            .instance()
+            .get(&PENDING_QUEUE)
+            .unwrap_or_else(|| Vec::new(&env));
         pending_queue.len() as u32
     }
 
     /// Get settlement statistics
     pub fn get_statistics(env: Env) -> (u64, u64, u64) {
-        let total_settled: u64 = env.storage().instance().get(&TOTAL_SETTLED).unwrap().unwrap();
-        let failed_settlements: u64 = env.storage().instance().get(&FAILED_SETTLEMENTS).unwrap().unwrap();
-        let settlement_counter: u64 = env.storage().instance().get(&SETTLEMENT_COUNTER).unwrap().unwrap();
-        
+        let total_settled: u64 = env
+            .storage()
+            .instance()
+            .get(&TOTAL_SETTLED)
+            .unwrap()
+            .unwrap();
+        let failed_settlements: u64 = env
+            .storage()
+            .instance()
+            .get(&FAILED_SETTLEMENTS)
+            .unwrap()
+            .unwrap();
+        let settlement_counter: u64 = env
+            .storage()
+            .instance()
+            .get(&SETTLEMENT_COUNTER)
+            .unwrap()
+            .unwrap();
+
         (total_settled, failed_settlements, settlement_counter)
     }
 
     /// Get anchor address
     pub fn get_anchor_address(env: Env) -> Address {
-        env.storage().instance().get(&ANCHOR_ADDRESS).unwrap().unwrap()
+        env.storage()
+            .instance()
+            .get(&ANCHOR_ADDRESS)
+            .unwrap()
+            .unwrap()
     }
 
     /// Get token address
     pub fn get_token_address(env: Env) -> Address {
-        env.storage().instance().get(&TOKEN_ADDRESS).unwrap().unwrap()
+        env.storage()
+            .instance()
+            .get(&TOKEN_ADDRESS)
+            .unwrap()
+            .unwrap()
     }
 
     /// Get admin address
