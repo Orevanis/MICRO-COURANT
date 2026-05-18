@@ -7,7 +7,7 @@ on:
     branches: [main, develop]
 
 env:
-  RUST_VERSION: '1.74.0'
+  RUST_VERSION: '1.89.0'
   NODE_VERSION: '20'
 
 jobs:
@@ -51,7 +51,7 @@ jobs:
 
       - name: Install Soroban CLI
         run: |
-          cargo install soroban-cli --locked
+          cargo install soroban-cli --version 25.2.0
 
       - name: Run contract tests
         run: |
@@ -190,7 +190,7 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
 
       - name: Install Soroban CLI
-        run: cargo install soroban-cli --locked
+        run: cargo install soroban-cli --version 25.2.0
 
       - name: Install dependencies
         run: |
@@ -237,9 +237,9 @@ jobs:
         run: cd contracts && cargo generate-lockfile
 
       - name: Run Rust security audit
-        uses: actions-rust-lang/audit@v1
-        with:
-          working-directory: contracts
+        run: |
+          cargo install cargo-audit --locked
+          cd contracts && cargo audit
 
       - name: Install npm dependencies
         run: npm install
