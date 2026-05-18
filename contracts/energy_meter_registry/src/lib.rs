@@ -1,19 +1,8 @@
 #![no_std]
-#![allow(dead_code)]
 use soroban_sdk::{
     contract, contractimpl, contracttype, symbol_short, Address, Bytes, Env, Map, String, Symbol,
     Vec,
 };
-
-/// Role types for access control
-#[contracttype]
-#[derive(Clone, Debug, Eq, PartialEq)]
-pub enum Role {
-    Household,
-    GridOperator,
-    Regulator,
-    EnergyProducer,
-}
 
 /// Meter status
 #[contracttype]

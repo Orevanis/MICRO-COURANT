@@ -1,5 +1,4 @@
 #![no_std]
-#![allow(dead_code)]
 use soroban_sdk::{contract, contractimpl, contracttype, Address, Bytes, Env, Map, String, Vec};
 
 /// Settlement status

@@ -1,21 +1,17 @@
-import {
-  Server,
-  TransactionBuilder,
-  Operation,
-  Networks,
-  BASE_FEE,
-} from "soroban-client";
 import * as Stellar from "stellar-sdk";
 import {
-  Transaction,
+  TransactionBuilder,
+  Networks,
+  BASE_FEE,
   Keypair,
   Asset,
-  Account,
   Contract,
   Address,
   SorobanRpc,
   xdr,
 } from "stellar-sdk";
+
+const { Server } = SorobanRpc;
 const ScVal = xdr.ScVal;
 import { logger } from "../utils/logger.js";
 import { config } from "../config/index.js";

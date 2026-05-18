@@ -1,5 +1,4 @@
 #![no_std]
-#![allow(dead_code)]
 use soroban_sdk::{contract, contractimpl, contracttype, Address, Bytes, Env, Map, Vec};
 
 /// Billing mode
@@ -8,42 +7,6 @@ use soroban_sdk::{contract, contractimpl, contracttype, Address, Bytes, Env, Map
 pub enum BillingMode {
     Prepaid,
     Postpaid,
-}
-
-/// Proposal type
-#[contracttype]
-#[derive(Clone, Debug, Eq, PartialEq)]
-pub enum ProposalType {
-    TariffChange,
-    AdminChange,
-    ThresholdChange,
-    ContractUpgrade,
-}
-
-/// Proposal status
-#[contracttype]
-#[derive(Clone, Debug, Eq, PartialEq)]
-pub enum ProposalStatus {
-    Pending,
-    Approved,
-    Rejected,
-    Executed,
-    Expired,
-}
-
-/// Governance proposal
-#[contracttype]
-#[derive(Clone)]
-pub struct Proposal {
-    pub proposal_id: u64,
-    pub proposal_type: ProposalType,
-    pub proposer: Address,
-    pub target_value: Bytes,
-    pub signatures: Vec<Address>,
-    pub threshold: u32,
-    pub status: ProposalStatus,
-    pub created_at: u64,
-    pub expires_at: u64,
 }
 
 /// Usage record structure
@@ -76,13 +39,10 @@ pub struct BalanceInfo {
 const ADMIN: soroban_sdk::Symbol = soroban_sdk::symbol!("ADMIN");
 const ADMIN_MULTISIG: soroban_sdk::Symbol = soroban_sdk::symbol!("ADMIN_MULTISIG");
 const ADMIN_THRESHOLD: soroban_sdk::Symbol = soroban_sdk::symbol!("ADMIN_THRESHOLD");
-const PROPOSALS: soroban_sdk::Symbol = soroban_sdk::symbol!("PROPOSALS");
-const PROPOSAL_COUNTER: soroban_sdk::Symbol = soroban_sdk::symbol!("PROPOSAL_COUNTER");
 const USAGE_RECORDS: soroban_sdk::Symbol = soroban_sdk::symbol!("USAGE_RECORDS");
 const USAGE_LRU: soroban_sdk::Symbol = soroban_sdk::symbol!("USAGE_LRU");
 const BALANCES: soroban_sdk::Symbol = soroban_sdk::symbol!("BALANCES");
 const TARIFF_RATE: soroban_sdk::Symbol = soroban_sdk::symbol!("TARIFF_RATE");
-const BILLING_CONTRACT: soroban_sdk::Symbol = soroban_sdk::symbol!("BILLING_CONTRACT");
 const SUBSIDY_CONTRACT: soroban_sdk::Symbol = soroban_sdk::symbol!("SUBSIDY_CONTRACT");
 const REENTRANCY_GUARD: soroban_sdk::Symbol = soroban_sdk::symbol!("REENTRANCY_GUARD");
 
@@ -91,9 +51,6 @@ const EVT_USAGE_RECORDED: soroban_sdk::Symbol = soroban_sdk::symbol!("USAGE_RECO
 const EVT_BALANCE_DEDUCTED: soroban_sdk::Symbol = soroban_sdk::symbol!("BALANCE_DEDUCTED");
 const EVT_BALANCE_ADDED: soroban_sdk::Symbol = soroban_sdk::symbol!("BALANCE_ADDED");
 const EVT_BILLING_CYCLE: soroban_sdk::Symbol = soroban_sdk::symbol!("BILLING_CYCLE");
-const EVT_PROPOSAL_CREATED: soroban_sdk::Symbol = soroban_sdk::symbol!("PROPOSAL_CREATED");
-const EVT_PROPOSAL_SIGNED: soroban_sdk::Symbol = soroban_sdk::symbol!("PROPOSAL_SIGNED");
-const EVT_PROPOSAL_EXECUTED: soroban_sdk::Symbol = soroban_sdk::symbol!("PROPOSAL_EXECUTED");
 
 #[contract]
 pub struct ConsumptionBilling;
@@ -110,14 +67,12 @@ impl ConsumptionBilling {
             .instance()
             .set(&TARIFF_RATE, &initial_tariff_rate);
 
-        // Initialize multi-sig with single admin by default
         let mut admin_multisig: Vec<Address> = Vec::new(&env);
         admin_multisig.push_back(admin.clone());
         env.storage()
             .instance()
             .set(&ADMIN_MULTISIG, &admin_multisig);
 
-        // Set threshold (minimum signatures required)
         env.storage()
             .instance()
             .set(&ADMIN_THRESHOLD, &admin_threshold);
@@ -134,7 +89,6 @@ impl ConsumptionBilling {
             .get(&ADMIN_MULTISIG)
             .unwrap_or_else(|| Vec::new(&env));
 
-        // Check if admin already exists
         for admin in admin_multisig.iter() {
             if admin == new_admin {
                 panic!("admin already exists");
@@ -202,7 +156,6 @@ impl ConsumptionBilling {
             .set(&ADMIN_THRESHOLD, &threshold);
     }
 
-    /// Check if caller is authorized admin
     fn is_authorized_admin(env: &Env, caller: &Address) -> bool {
         let admin_multisig: Vec<Address> = env
             .storage()
@@ -254,9 +207,11 @@ impl ConsumptionBilling {
             panic!("unauthorized admin");
         }
 
+        // Stored under a dedicated key; BILLING_CONTRACT was a misnomer in the original
+        const SETTLEMENT_CONTRACT_KEY: soroban_sdk::Symbol = soroban_sdk::symbol!("SETTLE_CTR");
         env.storage()
             .instance()
-            .set(&BILLING_CONTRACT, &settlement_contract);
+            .set(&SETTLEMENT_CONTRACT_KEY, &settlement_contract);
     }
 
     /// Register household for billing
@@ -297,7 +252,7 @@ impl ConsumptionBilling {
             .set(&BALANCES, &balances_updated);
     }
 
-    /// Record energy usage and deduct balance with gas optimizations and LRU eviction
+    /// Record energy usage and deduct balance
     pub fn record_usage(
         env: Env,
         meter_id: Bytes,
@@ -323,12 +278,8 @@ impl ConsumptionBilling {
             .checked_mul(tariff_rate)
             .unwrap_or_else(|| panic!("arithmetic overflow in cost calculation"));
 
-        let subsidy_applied = if env.storage().instance().has(&SUBSIDY_CONTRACT) {
-            0
-        } else {
-            0
-        };
-
+        // Subsidy lookup is a cross-contract call; placeholder returns 0 until integrated
+        let subsidy_applied: u64 = 0;
         let final_cost = cost.saturating_sub(subsidy_applied);
 
         let timestamp = env.ledger().timestamp();
@@ -364,7 +315,6 @@ impl ConsumptionBilling {
                 usage_records.remove(lru_key);
 
                 let mut new_lru: Vec<(Bytes, u64)> = Vec::new(&env);
-                // Skip the first element (index 0) by iterating from index 1
                 let lru_len = lru_list.len();
                 let mut idx: u32 = 1;
                 while idx < lru_len {
@@ -427,9 +377,8 @@ impl ConsumptionBilling {
         usage_record
     }
 
-    /// Add balance (payment or recharge) with gas optimizations
+    /// Add balance (payment or recharge)
     pub fn add_balance(env: Env, household_address: Address, amount: i64) {
-        // Reentrancy guard
         if env.storage().instance().has(&REENTRANCY_GUARD) {
             panic!("reentrancy detected");
         }
@@ -444,7 +393,6 @@ impl ConsumptionBilling {
             .get(household_address.clone())
             .unwrap_or_else(|| panic!("household not registered"));
 
-        // Saturating operations to prevent overflow/underflow
         balance_info.current_balance = balance_info.current_balance.saturating_add(amount);
         balance_info.total_paid = balance_info
             .total_paid
@@ -457,11 +405,9 @@ impl ConsumptionBilling {
             .instance()
             .set(&BALANCES, &balances_updated);
 
-        // Emit event
         env.events()
             .publish((EVT_BALANCE_ADDED, household_address), amount);
 
-        // Clear reentrancy guard
         env.storage().instance().remove(&REENTRANCY_GUARD);
     }
 
@@ -517,223 +463,17 @@ impl ConsumptionBilling {
         balance_info.current_balance >= required_amount as i64
     }
 
-    /// Process billing cycle (batch settlement)
+    /// Process billing cycle (batch settlement trigger)
     pub fn process_billing_cycle(env: Env) {
         let admin: Address = env.storage().instance().get(&ADMIN).unwrap().unwrap();
         admin.require_auth();
 
         let timestamp = env.ledger().timestamp();
-
-        // In a real implementation, this would:
-        // 1. Calculate total consumption for all households
-        // 2. Apply subsidies
-        // 3. Generate invoices for postpaid customers
-        // 4. Trigger settlement for prepaid customers
-
         env.events().publish((EVT_BILLING_CYCLE,), timestamp);
     }
 
     /// Get admin address
     pub fn get_admin(env: Env) -> Address {
         env.storage().instance().get(&ADMIN).unwrap().unwrap()
-    }
-
-    /// Create a governance proposal
-    pub fn create_proposal(
-        env: Env,
-        proposer: Address,
-        proposal_type: ProposalType,
-        target_value: Bytes,
-        duration: u64,
-    ) -> Proposal {
-        if !Self::is_authorized_admin(&env, &proposer) {
-            panic!("unauthorized: proposer must be an admin");
-        }
-
-        let counter: u64 = env
-            .storage()
-            .instance()
-            .get(&PROPOSAL_COUNTER)
-            .unwrap_or(0);
-        let proposal_id = counter + 1;
-        env.storage()
-            .instance()
-            .set(&PROPOSAL_COUNTER, &proposal_id);
-
-        let admin_threshold: u32 = env
-            .storage()
-            .instance()
-            .get(&ADMIN_THRESHOLD)
-            .unwrap_or(1);
-
-        let timestamp = env.ledger().timestamp();
-        let proposal = Proposal {
-            proposal_id,
-            proposal_type,
-            proposer: proposer.clone(),
-            target_value,
-            signatures: Vec::new(&env),
-            threshold: admin_threshold,
-            status: ProposalStatus::Pending,
-            created_at: timestamp,
-            expires_at: timestamp + duration,
-        };
-
-        let mut proposals: Map<u64, Proposal> = env
-            .storage()
-            .instance()
-            .get(&PROPOSALS)
-            .unwrap_or_else(|| Map::new(&env));
-        proposals.set(proposal_id, proposal.clone());
-        env.storage().instance().set(&PROPOSALS, &proposals);
-
-        env.events().publish(
-            (EVT_PROPOSAL_CREATED,),
-            (proposal_id, proposal_type, proposer),
-        );
-
-        proposal
-    }
-
-    /// Sign a proposal
-    pub fn sign_proposal(env: Env, signer: Address, proposal_id: u64) {
-        if !Self::is_authorized_admin(&env, &signer) {
-            panic!("unauthorized: signer must be an admin");
-        }
-
-        let mut proposals: Map<u64, Proposal> = env
-            .storage()
-            .instance()
-            .get(&PROPOSALS)
-            .unwrap_or_else(|| Map::new(&env));
-        let mut proposal = proposals
-            .get(proposal_id)
-            .unwrap_or_else(|| panic!("proposal not found"));
-
-        if proposal.status != ProposalStatus::Pending {
-            panic!("proposal is not pending");
-        }
-
-        let timestamp = env.ledger().timestamp();
-        if timestamp > proposal.expires_at {
-            proposal.status = ProposalStatus::Expired;
-            proposals.set(proposal_id, proposal.clone());
-            env.storage().instance().set(&PROPOSALS, &proposals);
-            panic!("proposal has expired");
-        }
-
-        for sig in proposal.signatures.iter() {
-            if sig == signer {
-                panic!("already signed");
-            }
-        }
-
-        proposal.signatures.push_back(signer.clone());
-
-        if proposal.signatures.len() >= proposal.threshold {
-            proposal.status = ProposalStatus::Approved;
-        }
-
-        proposals.set(proposal_id, proposal.clone());
-        env.storage().instance().set(&PROPOSALS, &proposals);
-
-        env.events().publish(
-            (EVT_PROPOSAL_SIGNED,),
-            (proposal_id, signer, proposal.signatures.len()),
-        );
-    }
-
-    /// Execute an approved proposal
-    pub fn execute_proposal(env: Env, executor: Address, proposal_id: u64) {
-        if !Self::is_authorized_admin(&env, &executor) {
-            panic!("unauthorized: executor must be an admin");
-        }
-
-        let mut proposals: Map<u64, Proposal> = env
-            .storage()
-            .instance()
-            .get(&PROPOSALS)
-            .unwrap_or_else(|| Map::new(&env));
-        let mut proposal = proposals
-            .get(proposal_id)
-            .unwrap_or_else(|| panic!("proposal not found"));
-
-        if proposal.status != ProposalStatus::Approved {
-            panic!("proposal is not approved");
-        }
-
-        match proposal.proposal_type {
-            ProposalType::TariffChange => {
-                // Decode 8-byte big-endian u64 from Bytes
-                let bytes = proposal.target_value.clone();
-                if bytes.len() < 8 {
-                    panic!("invalid target value length for TariffChange");
-                }
-                let mut arr = [0u8; 8];
-                for i in 0..8u32 {
-                    arr[i as usize] = bytes.get(i).unwrap();
-                }
-                let new_rate = u64::from_be_bytes(arr);
-                env.storage().instance().set(&TARIFF_RATE, &new_rate);
-            }
-            ProposalType::AdminChange => {
-                // AdminChange: store raw bytes as new admin key (placeholder)
-                // In production, encode/decode Address properly via XDR
-                panic!("AdminChange execution not supported in this version");
-            }
-            ProposalType::ThresholdChange => {
-                // Decode 4-byte big-endian u32 from Bytes
-                let bytes = proposal.target_value.clone();
-                if bytes.len() < 4 {
-                    panic!("invalid target value length for ThresholdChange");
-                }
-                let mut arr = [0u8; 4];
-                for i in 0..4u32 {
-                    arr[i as usize] = bytes.get(i).unwrap();
-                }
-                let new_threshold = u32::from_be_bytes(arr);
-                env.storage()
-                    .instance()
-                    .set(&ADMIN_THRESHOLD, &new_threshold);
-            }
-            ProposalType::ContractUpgrade => {
-                panic!("contract upgrade not implemented");
-            }
-        }
-
-        proposal.status = ProposalStatus::Executed;
-        proposals.set(proposal_id, proposal.clone());
-        env.storage().instance().set(&PROPOSALS, &proposals);
-
-        env.events().publish(
-            (EVT_PROPOSAL_EXECUTED,),
-            (proposal_id, proposal.proposal_type),
-        );
-    }
-
-    /// Get proposal by ID
-    pub fn get_proposal(env: Env, proposal_id: u64) -> Proposal {
-        let proposals: Map<u64, Proposal> = env
-            .storage()
-            .instance()
-            .get(&PROPOSALS)
-            .unwrap_or_else(|| Map::new(&env));
-        proposals
-            .get(proposal_id)
-            .unwrap_or_else(|| panic!("proposal not found"))
-    }
-
-    /// Get all proposals
-    pub fn get_all_proposals(env: Env) -> Vec<Proposal> {
-        let proposals: Map<u64, Proposal> = env
-            .storage()
-            .instance()
-            .get(&PROPOSALS)
-            .unwrap_or_else(|| Map::new(&env));
-        let mut result = Vec::new(&env);
-        for (_, proposal) in proposals.iter() {
-            result.push_back(proposal);
-        }
-        result
     }
 }

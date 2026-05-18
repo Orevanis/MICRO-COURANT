@@ -1,0 +1,23 @@
+{
+  "name": "@micro-courant/sdk",
+  "version": "0.1.0",
+  "description": "JavaScript/TypeScript SDK for Micro-Courant energy grid integration",
+  "main": "src/index.js",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.js"
+  },
+  "scripts": {
+    "test": "jest",
+    "lint": "eslint src/**/*.js"
+  },
+  "keywords": ["stellar", "soroban", "energy", "microgrid"],
+  "license": "MIT",
+  "peerDependencies": {
+    "stellar-sdk": ">=11.0.0"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0",
+    "eslint": "^8.57.0"
+  }
+}
