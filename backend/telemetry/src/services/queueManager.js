@@ -1,17 +1,17 @@
-import Queue from 'bull';
-import { Redis } from 'ioredis';
-import { logger } from '../utils/logger.js';
-import { config } from '../config/index.js';
+import Queue from "bull";
+import { Redis } from "ioredis";
+import { logger } from "../utils/logger.js";
+import { config } from "../config/index.js";
 
 // Error classification
 export const ErrorTypes = {
-  TRANSIENT: 'transient',      // Temporary errors that should be retried
-  PERMANENT: 'permanent',      // Permanent errors that should not be retried
-  RATE_LIMIT: 'rate_limit',     // Rate limit errors that need backoff
-  VALIDATION: 'validation',     // Input validation errors
-  NETWORK: 'network',          // Network connectivity errors
-  DATABASE: 'database',        // Database errors
-  EXTERNAL_SERVICE: 'external_service' // External service errors
+  TRANSIENT: "transient", // Temporary errors that should be retried
+  PERMANENT: "permanent", // Permanent errors that should not be retried
+  RATE_LIMIT: "rate_limit", // Rate limit errors that need backoff
+  VALIDATION: "validation", // Input validation errors
+  NETWORK: "network", // Network connectivity errors
+  DATABASE: "database", // Database errors
+  EXTERNAL_SERVICE: "external_service", // External service errors
 };
 
 // Error classification patterns
@@ -22,37 +22,13 @@ const ERROR_PATTERNS = {
     /ECONNRESET/i,
     /ECONNREFUSED/i,
     /temporary/i,
-    /temporarily/i
+    /temporarily/i,
   ],
-  RATE_LIMIT: [
-    /rate limit/i,
-    /429/i,
-    /too many requests/i
-  ],
-  VALIDATION: [
-    /validation/i,
-    /invalid/i,
-    /malformed/i,
-    /required/i
-  ],
-  NETWORK: [
-    /network/i,
-    /ENOTFOUND/i,
-    /EHOSTUNREACH/i,
-    /ECONNREFUSED/i
-  ],
-  DATABASE: [
-    /database/i,
-    /postgres/i,
-    /connection/i,
-    /deadlock/i
-  ],
-  EXTERNAL_SERVICE: [
-    /stellar/i,
-    /soroban/i,
-    /external/i,
-    /api/i
-  ]
+  RATE_LIMIT: [/rate limit/i, /429/i, /too many requests/i],
+  VALIDATION: [/validation/i, /invalid/i, /malformed/i, /required/i],
+  NETWORK: [/network/i, /ENOTFOUND/i, /EHOSTUNREACH/i, /ECONNREFUSED/i],
+  DATABASE: [/database/i, /postgres/i, /connection/i, /deadlock/i],
+  EXTERNAL_SERVICE: [/stellar/i, /soroban/i, /external/i, /api/i],
 };
 
 export class QueueManager {
@@ -66,53 +42,55 @@ export class QueueManager {
     this.redis = new Redis({
       host: config.redis.host,
       port: config.redis.port,
-      password: config.redis.password
+      password: config.redis.password,
     });
 
-    this.readingQueue = new Queue('meter-readings', {
+    this.readingQueue = new Queue("meter-readings", {
       redis: {
         host: config.redis.host,
         port: config.redis.port,
-        password: config.redis.password
+        password: config.redis.password,
       },
       defaultJobOptions: {
         attempts: config.queue.retryAttempts || 3,
         backoff: {
-          type: 'exponential',
-          delay: config.queue.retryDelay || 5000
+          type: "exponential",
+          delay: config.queue.retryDelay || 5000,
         },
         removeOnComplete: 100,
-        removeOnFail: 50
-      }
+        removeOnFail: 50,
+      },
     });
 
     // Queue event handlers with error classification
-    this.readingQueue.on('completed', (job, result) => {
+    this.readingQueue.on("completed", (job, result) => {
       logger.info(`Job ${job.id} completed:`, result);
     });
 
-    this.readingQueue.on('failed', (job, err) => {
+    this.readingQueue.on("failed", (job, err) => {
       const errorType = this.classifyError(err);
       logger.error(`Job ${job.id} failed [${errorType}]:`, err.message);
-      
+
       // Log additional context for specific error types
       if (errorType === ErrorTypes.PERMANENT) {
         logger.error(`Permanent error for job ${job.id}, will not retry`);
       } else if (errorType === ErrorTypes.RATE_LIMIT) {
-        logger.warn(`Rate limit hit for job ${job.id}, will retry with backoff`);
+        logger.warn(
+          `Rate limit hit for job ${job.id}, will retry with backoff`,
+        );
       }
     });
 
-    this.readingQueue.on('stalled', (job) => {
+    this.readingQueue.on("stalled", (job) => {
       logger.warn(`Job ${job.id} stalled`);
     });
 
-    logger.info('Queue manager initialized');
+    logger.info("Queue manager initialized");
   }
 
   classifyError(error) {
-    const errorMessage = error.message || '';
-    const errorName = error.name || '';
+    const errorMessage = error.message || "";
+    const errorName = error.name || "";
 
     // Check for specific error patterns
     for (const [type, patterns] of Object.entries(ERROR_PATTERNS)) {
@@ -125,10 +103,10 @@ export class QueueManager {
 
     // Default classification based on error code
     if (error.code) {
-      if (error.code === 'ETIMEDOUT' || error.code === 'ECONNRESET') {
+      if (error.code === "ETIMEDOUT" || error.code === "ECONNRESET") {
         return ErrorTypes.TRANSIENT.toUpperCase();
       }
-      if (error.code === 'ECONNREFUSED') {
+      if (error.code === "ECONNREFUSED") {
         return ErrorTypes.NETWORK.toUpperCase();
       }
     }
@@ -172,7 +150,7 @@ export class QueueManager {
 
   getRetryDelay(attemptsMade, errorType) {
     const baseDelay = config.queue.retryDelay || 5000;
-    
+
     // Exponential backoff for rate limits
     if (errorType === ErrorTypes.RATE_LIMIT.toUpperCase()) {
       return baseDelay * Math.pow(2, attemptsMade);
@@ -188,18 +166,18 @@ export class QueueManager {
   }
 
   async addReading(reading) {
-    const job = await this.readingQueue.add('process-reading', reading, {
+    const job = await this.readingQueue.add("process-reading", reading, {
       priority: this.calculatePriority(reading),
       attempts: config.queue.retryAttempts || 3,
       backoff: {
-        type: 'exponential',
-        delay: config.queue.retryDelay || 5000
-      }
+        type: "exponential",
+        delay: config.queue.retryDelay || 5000,
+      },
     });
-    
+
     this.lastId = job.id;
     logger.debug(`Reading added to queue: ${job.id}`);
-    
+
     return job.id;
   }
 
@@ -216,29 +194,36 @@ export class QueueManager {
   startProcessing(telemetryService) {
     this.readingQueue.process(config.queue.concurrency, async (job) => {
       const attemptsMade = job.attemptsMade || 0;
-      
+
       try {
         const result = await telemetryService.processReading(job.data);
         return result;
       } catch (error) {
         const errorType = this.classifyError(error);
-        
+
         // Check if we should retry
         if (!this.shouldRetry(error, attemptsMade)) {
-          logger.error(`Job ${job.id} will not be retried [${errorType}]:`, error.message);
+          logger.error(
+            `Job ${job.id} will not be retried [${errorType}]:`,
+            error.message,
+          );
           // Mark as failed without retry
           throw new Error(`Permanent error: ${error.message}`);
         }
 
         // Calculate retry delay
         const retryDelay = this.getRetryDelay(attemptsMade, errorType);
-        logger.warn(`Job ${job.id} will retry in ${retryDelay}ms [${errorType}]`);
-        
+        logger.warn(
+          `Job ${job.id} will retry in ${retryDelay}ms [${errorType}]`,
+        );
+
         throw error;
       }
     });
 
-    logger.info(`Queue processing started with concurrency: ${config.queue.concurrency}`);
+    logger.info(
+      `Queue processing started with concurrency: ${config.queue.concurrency}`,
+    );
   }
 
   async getQueueStats() {
@@ -251,19 +236,19 @@ export class QueueManager {
       waiting: waiting.length,
       active: active.length,
       completed: completed.length,
-      failed: failed.length
+      failed: failed.length,
     };
   }
 
   async shutdown() {
     if (this.readingQueue) {
       await this.readingQueue.close();
-      logger.info('Queue closed');
+      logger.info("Queue closed");
     }
-    
+
     if (this.redis) {
       await this.redis.quit();
-      logger.info('Queue Redis connection closed');
+      logger.info("Queue Redis connection closed");
     }
   }
 }

@@ -1,5 +1,5 @@
-import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
+import { create } from "zustand";
+import { persist } from "zustand/middleware";
 
 export const useAuthStore = create(
   persist(
@@ -18,11 +18,15 @@ export const useAuthStore = create(
 
       updateUser: (userData) => {
         set({ user: { ...get().user, ...userData } });
-      }
+      },
     }),
     {
-      name: 'micro-courant-governance-auth',
-      partialize: (state) => ({ user: state.user, token: state.token, isAuthenticated: state.isAuthenticated })
-    }
-  )
+      name: "micro-courant-governance-auth",
+      partialize: (state) => ({
+        user: state.user,
+        token: state.token,
+        isAuthenticated: state.isAuthenticated,
+      }),
+    },
+  ),
 );

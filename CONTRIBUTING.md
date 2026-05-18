@@ -74,6 +74,7 @@ Follow conventional commits format:
 ```
 
 Types:
+
 - `feat`: New feature
 - `fix`: Bug fix
 - `docs`: Documentation changes
@@ -83,6 +84,7 @@ Types:
 - `chore`: Maintenance tasks
 
 Example:
+
 ```
 feat(billing): add real-time balance deduction
 
@@ -108,23 +110,28 @@ Closes #123
 
 ```markdown
 ## Description
+
 Brief description of changes
 
 ## Type of Change
+
 - [ ] Bug fix
 - [ ] New feature
 - [ ] Breaking change
 - [ ] Documentation update
 
 ## Related Issues
+
 Closes #issue_number
 
 ## Testing
+
 - [ ] Unit tests added/updated
 - [ ] Integration tests added/updated
 - [ ] Manual testing performed
 
 ## Checklist
+
 - [ ] Code follows project style guidelines
 - [ ] Self-review performed
 - [ ] Commented complex code
@@ -307,6 +314,7 @@ frontend/
 ### Bug Reports
 
 Include:
+
 - Description of the bug
 - Steps to reproduce
 - Expected behavior
@@ -317,6 +325,7 @@ Include:
 ### Feature Requests
 
 Include:
+
 - Description of the feature
 - Use case
 - Proposed implementation
@@ -327,6 +336,7 @@ Include:
 ### Versioning
 
 Follow Semantic Versioning (semver):
+
 - MAJOR: Breaking changes
 - MINOR: New features (backwards compatible)
 - PATCH: Bug fixes (backwards compatible)

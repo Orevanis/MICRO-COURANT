@@ -1,13 +1,13 @@
-import { Routes, Route, Navigate } from 'react-router-dom';
-import { useAuthStore } from './stores/authStore';
-import Layout from './components/Layout';
-import Dashboard from './pages/Dashboard';
-import Usage from './pages/Usage';
-import Balance from './pages/Balance';
-import Recharge from './pages/Recharge';
-import Alerts from './pages/Alerts';
-import Settings from './pages/Settings';
-import Login from './pages/Login';
+import { Routes, Route, Navigate } from "react-router-dom";
+import { useAuthStore } from "./stores/authStore";
+import Layout from "./components/Layout";
+import Dashboard from "./pages/Dashboard";
+import Usage from "./pages/Usage";
+import Balance from "./pages/Balance";
+import Recharge from "./pages/Recharge";
+import Alerts from "./pages/Alerts";
+import Settings from "./pages/Settings";
+import Login from "./pages/Login";
 
 function App() {
   const { isAuthenticated } = useAuthStore();

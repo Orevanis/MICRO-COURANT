@@ -1,28 +1,42 @@
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area } from 'recharts';
-import { Activity, TrendingUp, Zap, AlertTriangle } from 'lucide-react';
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  AreaChart,
+  Area,
+} from "recharts";
+import { Activity, TrendingUp, Zap, AlertTriangle } from "lucide-react";
 
 export default function GridLoad() {
   const hourlyData = [
-    { time: '00:00', load: 45, capacity: 100 },
-    { time: '04:00', load: 38, capacity: 100 },
-    { time: '08:00', load: 65, capacity: 100 },
-    { time: '12:00', load: 82, capacity: 100 },
-    { time: '16:00', load: 78, capacity: 100 },
-    { time: '20:00', load: 95, capacity: 100 },
-    { time: '24:00', load: 52, capacity: 100 },
+    { time: "00:00", load: 45, capacity: 100 },
+    { time: "04:00", load: 38, capacity: 100 },
+    { time: "08:00", load: 65, capacity: 100 },
+    { time: "12:00", load: 82, capacity: 100 },
+    { time: "16:00", load: 78, capacity: 100 },
+    { time: "20:00", load: 95, capacity: 100 },
+    { time: "24:00", load: 52, capacity: 100 },
   ];
 
   const zoneData = [
-    { name: 'Zone A', load: 45, capacity: 50 },
-    { name: 'Zone B', load: 32, capacity: 40 },
-    { name: 'Zone C', load: 23, capacity: 30 },
+    { name: "Zone A", load: 45, capacity: 50 },
+    { name: "Zone B", load: 32, capacity: 40 },
+    { name: "Zone C", load: 23, capacity: 30 },
   ];
 
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">Grid Load Monitoring</h1>
-        <p className="text-gray-600">Real-time energy consumption and grid status</p>
+        <h1 className="text-2xl font-bold text-gray-900">
+          Grid Load Monitoring
+        </h1>
+        <p className="text-gray-600">
+          Real-time energy consumption and grid status
+        </p>
       </div>
 
       {/* Current status */}
@@ -78,17 +92,17 @@ export default function GridLoad() {
               <XAxis dataKey="time" />
               <YAxis />
               <Tooltip />
-              <Area 
-                type="monotone" 
-                dataKey="load" 
-                stroke="#10b981" 
+              <Area
+                type="monotone"
+                dataKey="load"
+                stroke="#10b981"
                 fill="#10b981"
                 fillOpacity={0.3}
               />
-              <Line 
-                type="monotone" 
-                dataKey="capacity" 
-                stroke="#ef4444" 
+              <Line
+                type="monotone"
+                dataKey="capacity"
+                stroke="#ef4444"
                 strokeDasharray="5 5"
               />
             </AreaChart>
@@ -106,13 +120,19 @@ export default function GridLoad() {
               <div key={zone.name}>
                 <div className="flex justify-between text-sm mb-1">
                   <span className="font-medium">{zone.name}</span>
-                  <span>{zone.load} kW / {zone.capacity} kW ({percentage.toFixed(1)}%)</span>
+                  <span>
+                    {zone.load} kW / {zone.capacity} kW ({percentage.toFixed(1)}
+                    %)
+                  </span>
                 </div>
                 <div className="w-full bg-gray-200 rounded-full h-3">
-                  <div 
+                  <div
                     className={`h-3 rounded-full transition-all ${
-                      percentage > 90 ? 'bg-red-500' : 
-                      percentage > 75 ? 'bg-yellow-500' : 'bg-green-500'
+                      percentage > 90
+                        ? "bg-red-500"
+                        : percentage > 75
+                          ? "bg-yellow-500"
+                          : "bg-green-500"
                     }`}
                     style={{ width: `${percentage}%` }}
                   ></div>
@@ -131,14 +151,18 @@ export default function GridLoad() {
             <AlertTriangle className="text-red-600 mt-0.5" size={20} />
             <div>
               <p className="font-medium text-red-800">High Load Warning</p>
-              <p className="text-sm text-red-700">Zone C approaching capacity (95%)</p>
+              <p className="text-sm text-red-700">
+                Zone C approaching capacity (95%)
+              </p>
             </div>
           </div>
           <div className="flex items-start space-x-3 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
             <AlertTriangle className="text-yellow-600 mt-0.5" size={20} />
             <div>
               <p className="font-medium text-yellow-800">Unusual Consumption</p>
-              <p className="text-sm text-yellow-700">Meter MTR-005 showing abnormal patterns</p>
+              <p className="text-sm text-yellow-700">
+                Meter MTR-005 showing abnormal patterns
+              </p>
             </div>
           </div>
         </div>

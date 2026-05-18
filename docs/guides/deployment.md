@@ -268,9 +268,9 @@ spec:
     privateKeySecretRef:
       name: letsencrypt-prod
     solvers:
-    - http01:
-        ingress:
-          class: nginx
+      - http01:
+          ingress:
+            class: nginx
 ```
 
 Apply:
@@ -294,6 +294,7 @@ Login with credentials from `grafana-secret`.
 ### Configure Dashboards
 
 Import pre-configured dashboards:
+
 - API Gateway metrics
 - Telemetry service metrics
 - Database performance
@@ -302,6 +303,7 @@ Import pre-configured dashboards:
 ### Set Up Alerts
 
 Configure alert rules in Prometheus for:
+
 - High error rates
 - High latency
 - Low pod availability
@@ -457,6 +459,7 @@ kubectl logs -n micro-courant <pod-name> --tail=100 -f
 ## Support
 
 For deployment issues:
+
 - Check logs: `kubectl logs -n micro-courant`
 - Check events: `kubectl get events -n micro-courant`
 - Review documentation in `/docs`
@@ -482,6 +485,7 @@ kubectl exec -i -n micro-courant postgres-0 -- psql -U courant_user micro_couran
 ### Recovery Testing
 
 Test disaster recovery procedures quarterly:
+
 - Backup restoration
 - Service failover
 - Data consistency verification

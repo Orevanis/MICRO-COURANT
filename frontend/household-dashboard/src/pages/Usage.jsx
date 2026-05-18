@@ -1,27 +1,35 @@
-import { useQuery } from '@tanstack/react-query';
-import { energyApi } from '../api/energy';
-import { useEnergyStore } from '../stores/energyStore';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import { Calendar, TrendingUp } from 'lucide-react';
+import { useQuery } from "@tanstack/react-query";
+import { energyApi } from "../api/energy";
+import { useEnergyStore } from "../stores/energyStore";
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+} from "recharts";
+import { Calendar, TrendingUp } from "lucide-react";
 
 export default function Usage() {
   const { meterId } = useEnergyStore();
-  
+
   const { data: usageData } = useQuery({
-    queryKey: ['usageHistory', meterId],
+    queryKey: ["usageHistory", meterId],
     queryFn: () => energyApi.getUsageHistory(meterId),
-    enabled: !!meterId
+    enabled: !!meterId,
   });
 
   // Mock data for chart
   const chartData = [
-    { time: '00:00', usage: 0.5 },
-    { time: '04:00', usage: 0.3 },
-    { time: '08:00', usage: 1.2 },
-    { time: '12:00', usage: 2.5 },
-    { time: '16:00', usage: 1.8 },
-    { time: '20:00', usage: 3.2 },
-    { time: '24:00', usage: 1.5 },
+    { time: "00:00", usage: 0.5 },
+    { time: "04:00", usage: 0.3 },
+    { time: "08:00", usage: 1.2 },
+    { time: "12:00", usage: 2.5 },
+    { time: "16:00", usage: 1.8 },
+    { time: "20:00", usage: 3.2 },
+    { time: "24:00", usage: 1.5 },
   ];
 
   return (
@@ -44,7 +52,7 @@ export default function Usage() {
             </select>
           </div>
         </div>
-        
+
         <div className="h-64">
           <ResponsiveContainer width="100%" height="100%">
             <LineChart data={chartData}>
@@ -52,12 +60,12 @@ export default function Usage() {
               <XAxis dataKey="time" />
               <YAxis />
               <Tooltip />
-              <Line 
-                type="monotone" 
-                dataKey="usage" 
-                stroke="#10b981" 
+              <Line
+                type="monotone"
+                dataKey="usage"
+                stroke="#10b981"
                 strokeWidth={2}
-                dot={{ fill: '#10b981' }}
+                dot={{ fill: "#10b981" }}
               />
             </LineChart>
           </ResponsiveContainer>
@@ -102,7 +110,10 @@ export default function Usage() {
               <span>2.5 kWh (23%)</span>
             </div>
             <div className="w-full bg-gray-200 rounded-full h-2">
-              <div className="bg-primary-600 h-2 rounded-full" style={{ width: '23%' }}></div>
+              <div
+                className="bg-primary-600 h-2 rounded-full"
+                style={{ width: "23%" }}
+              ></div>
             </div>
           </div>
 
@@ -112,7 +123,10 @@ export default function Usage() {
               <span>4.2 kWh (38%)</span>
             </div>
             <div className="w-full bg-gray-200 rounded-full h-2">
-              <div className="bg-blue-600 h-2 rounded-full" style={{ width: '38%' }}></div>
+              <div
+                className="bg-blue-600 h-2 rounded-full"
+                style={{ width: "38%" }}
+              ></div>
             </div>
           </div>
 
@@ -122,7 +136,10 @@ export default function Usage() {
               <span>3.8 kWh (35%)</span>
             </div>
             <div className="w-full bg-gray-200 rounded-full h-2">
-              <div className="bg-yellow-600 h-2 rounded-full" style={{ width: '35%' }}></div>
+              <div
+                className="bg-yellow-600 h-2 rounded-full"
+                style={{ width: "35%" }}
+              ></div>
             </div>
           </div>
 
@@ -132,7 +149,10 @@ export default function Usage() {
               <span>0.5 kWh (4%)</span>
             </div>
             <div className="w-full bg-gray-200 rounded-full h-2">
-              <div className="bg-gray-600 h-2 rounded-full" style={{ width: '4%' }}></div>
+              <div
+                className="bg-gray-600 h-2 rounded-full"
+                style={{ width: "4%" }}
+              ></div>
             </div>
           </div>
         </div>

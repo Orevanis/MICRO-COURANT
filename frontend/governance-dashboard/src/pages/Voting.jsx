@@ -1,25 +1,27 @@
-import { Vote, CheckCircle, XCircle, MinusCircle } from 'lucide-react';
+import { Vote, CheckCircle, XCircle, MinusCircle } from "lucide-react";
 
 export default function Voting() {
   const activeProposals = [
-    { 
-      id: 1, 
-      title: 'Reduce tariff for low-income households', 
-      description: 'This proposal aims to reduce the base tariff by 15% for households classified as low-income based on their monthly consumption patterns.',
+    {
+      id: 1,
+      title: "Reduce tariff for low-income households",
+      description:
+        "This proposal aims to reduce the base tariff by 15% for households classified as low-income based on their monthly consumption patterns.",
       votes: { yes: 45, no: 12, abstain: 5 },
       totalVoters: 100,
-      endDate: '2024-01-20',
-      hasVoted: false
+      endDate: "2024-01-20",
+      hasVoted: false,
     },
-    { 
-      id: 2, 
-      title: 'Implement peak-hour pricing', 
-      description: 'Introduce time-of-use pricing with higher rates during peak hours (6PM-10PM) to encourage load balancing.',
+    {
+      id: 2,
+      title: "Implement peak-hour pricing",
+      description:
+        "Introduce time-of-use pricing with higher rates during peak hours (6PM-10PM) to encourage load balancing.",
       votes: { yes: 34, no: 28, abstain: 8 },
       totalVoters: 100,
-      endDate: '2024-01-22',
+      endDate: "2024-01-22",
       hasVoted: true,
-      userVote: 'yes'
+      userVote: "yes",
     },
   ];
 
@@ -31,7 +33,9 @@ export default function Voting() {
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold text-gray-900">Voting</h1>
-        <p className="text-gray-600">Cast your vote on active governance proposals</p>
+        <p className="text-gray-600">
+          Cast your vote on active governance proposals
+        </p>
       </div>
 
       {/* Voting stats */}
@@ -75,7 +79,7 @@ export default function Voting() {
                     </span>
                   )}
                 </div>
-                
+
                 <p className="text-gray-600 mb-4">{proposal.description}</p>
 
                 {/* Vote breakdown */}
@@ -83,23 +87,50 @@ export default function Voting() {
                   <div className="text-center p-3 bg-green-50 rounded-lg">
                     <div className="flex items-center justify-center space-x-1 mb-1">
                       <CheckCircle className="text-green-600" size={16} />
-                      <span className="text-2xl font-bold text-green-600">{proposal.votes.yes}</span>
+                      <span className="text-2xl font-bold text-green-600">
+                        {proposal.votes.yes}
+                      </span>
                     </div>
-                    <p className="text-xs text-green-800">Yes ({calculatePercentage(proposal.votes.yes, proposal.totalVoters)}%)</p>
+                    <p className="text-xs text-green-800">
+                      Yes (
+                      {calculatePercentage(
+                        proposal.votes.yes,
+                        proposal.totalVoters,
+                      )}
+                      %)
+                    </p>
                   </div>
                   <div className="text-center p-3 bg-red-50 rounded-lg">
                     <div className="flex items-center justify-center space-x-1 mb-1">
                       <XCircle className="text-red-600" size={16} />
-                      <span className="text-2xl font-bold text-red-600">{proposal.votes.no}</span>
+                      <span className="text-2xl font-bold text-red-600">
+                        {proposal.votes.no}
+                      </span>
                     </div>
-                    <p className="text-xs text-red-800">No ({calculatePercentage(proposal.votes.no, proposal.totalVoters)}%)</p>
+                    <p className="text-xs text-red-800">
+                      No (
+                      {calculatePercentage(
+                        proposal.votes.no,
+                        proposal.totalVoters,
+                      )}
+                      %)
+                    </p>
                   </div>
                   <div className="text-center p-3 bg-gray-50 rounded-lg">
                     <div className="flex items-center justify-center space-x-1 mb-1">
                       <MinusCircle className="text-gray-600" size={16} />
-                      <span className="text-2xl font-bold text-gray-600">{proposal.votes.abstain}</span>
+                      <span className="text-2xl font-bold text-gray-600">
+                        {proposal.votes.abstain}
+                      </span>
                     </div>
-                    <p className="text-xs text-gray-800">Abstain ({calculatePercentage(proposal.votes.abstain, proposal.totalVoters)}%)</p>
+                    <p className="text-xs text-gray-800">
+                      Abstain (
+                      {calculatePercentage(
+                        proposal.votes.abstain,
+                        proposal.totalVoters,
+                      )}
+                      %)
+                    </p>
                   </div>
                 </div>
 
@@ -108,22 +139,31 @@ export default function Voting() {
                   <div className="flex justify-between text-sm mb-1">
                     <span className="text-gray-600">Voting Progress</span>
                     <span className="font-medium">
-                      {proposal.votes.yes + proposal.votes.no + proposal.votes.abstain} / {proposal.totalVoters} votes
+                      {proposal.votes.yes +
+                        proposal.votes.no +
+                        proposal.votes.abstain}{" "}
+                      / {proposal.totalVoters} votes
                     </span>
                   </div>
                   <div className="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
                     <div className="flex h-full">
-                      <div 
-                        className="bg-green-500" 
-                        style={{ width: `${calculatePercentage(proposal.votes.yes, proposal.totalVoters)}%` }}
+                      <div
+                        className="bg-green-500"
+                        style={{
+                          width: `${calculatePercentage(proposal.votes.yes, proposal.totalVoters)}%`,
+                        }}
                       ></div>
-                      <div 
-                        className="bg-red-500" 
-                        style={{ width: `${calculatePercentage(proposal.votes.no, proposal.totalVoters)}%` }}
+                      <div
+                        className="bg-red-500"
+                        style={{
+                          width: `${calculatePercentage(proposal.votes.no, proposal.totalVoters)}%`,
+                        }}
                       ></div>
-                      <div 
-                        className="bg-gray-400" 
-                        style={{ width: `${calculatePercentage(proposal.votes.abstain, proposal.totalVoters)}%` }}
+                      <div
+                        className="bg-gray-400"
+                        style={{
+                          width: `${calculatePercentage(proposal.votes.abstain, proposal.totalVoters)}%`,
+                        }}
                       ></div>
                     </div>
                   </div>
@@ -141,9 +181,7 @@ export default function Voting() {
                       <button className="btn-primary bg-red-600 hover:bg-red-700">
                         Vote No
                       </button>
-                      <button className="btn-secondary">
-                        Abstain
-                      </button>
+                      <button className="btn-secondary">Abstain</button>
                     </div>
                   ) : (
                     <span className="text-sm text-green-600 font-medium">

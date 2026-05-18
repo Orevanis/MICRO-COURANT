@@ -62,7 +62,7 @@ impl NewContract {
     pub fn initialize(env: Env, admin: Address) {
         // Initialization logic
     }
-    
+
     pub fn function_name(env: Env, arg1: u64) -> u64 {
         // Function logic
         42
@@ -78,6 +78,7 @@ cargo build --release --target wasm32-unknown-unknown
 ```
 
 The WASM file will be at:
+
 ```
 target/wasm32-unknown-unknown/release/new_contract.wasm
 ```
@@ -117,9 +118,9 @@ Test contract interactions:
 fn test_integration() {
     let env = Env::default();
     let admin = Address::generate(&env);
-    
+
     NewContract::initialize(env.clone(), admin.clone());
-    
+
     let result = NewContract::function_name(env, 10);
     assert_eq!(result, 42);
 }
@@ -207,7 +208,7 @@ impl NewContract {
             &old_contract_id,
             &DataKey::State
         );
-        
+
         // Write to new contract
         env.storage().set(&DataKey::State, &old_state);
     }
@@ -282,6 +283,7 @@ pub enum Error {
 **Purpose**: Manage energy meter registration and status
 
 **Key Functions**:
+
 - `initialize(admin)`: Set admin address
 - `register_meter(meter_id, household, location, operator)`: Register new meter
 - `update_reading(meter_id, reading)`: Update meter reading
@@ -290,6 +292,7 @@ pub enum Error {
 - `update_trust_score(meter_id, score)`: Update trust score
 
 **Events**:
+
 - `meter_registered`
 - `reading_updated`
 - `meter_suspended`
@@ -300,6 +303,7 @@ pub enum Error {
 **Purpose**: Handle billing calculations and balance management
 
 **Key Functions**:
+
 - `initialize(admin, tariff_rate)`: Set admin and tariff
 - `set_tariff_rate(rate)`: Update tariff rate
 - `register_household(household, billing_mode)`: Register household
@@ -308,6 +312,7 @@ pub enum Error {
 - `process_billing_cycle()`: Process billing for all households
 
 **Events**:
+
 - `tariff_updated`
 - `household_registered`
 - `usage_recorded`
@@ -318,6 +323,7 @@ pub enum Error {
 **Purpose**: Enable peer-to-peer energy trading
 
 **Key Functions**:
+
 - `initialize(admin)`: Set admin address
 - `create_offer(producer, amount, price, expiry)`: Create energy offer
 - `create_request(consumer, amount, max_price, expiry)`: Create energy request
@@ -327,6 +333,7 @@ pub enum Error {
 - `settle_trade(trade_id)`: Settle completed trade
 
 **Events**:
+
 - `offer_created`
 - `request_created`
 - `trade_matched`
@@ -337,6 +344,7 @@ pub enum Error {
 **Purpose**: Manage community subsidies and governance
 
 **Key Functions**:
+
 - `initialize(admin)`: Set admin address
 - `create_proposal(proposer, type, title, description)`: Create proposal
 - `cast_vote(voter, proposal_id, vote_option)`: Cast vote
@@ -346,6 +354,7 @@ pub enum Error {
 - `add_to_fund(amount)`: Add to community fund
 
 **Events**:
+
 - `proposal_created`
 - `vote_cast`
 - `proposal_finalized`
@@ -357,6 +366,7 @@ pub enum Error {
 **Purpose**: Process settlement transactions on Stellar
 
 **Key Functions**:
+
 - `initialize(admin, anchor, token)`: Set admin, anchor, and token
 - `create_settlement(type, from, to, amount, reference)`: Create settlement
 - `process_pending_settlements(batch_size)`: Process pending settlements
@@ -364,6 +374,7 @@ pub enum Error {
 - `retry_settlement(settlement_id)`: Retry failed settlement
 
 **Events**:
+
 - `settlement_created`
 - `settlement_processed`
 - `settlement_failed`
@@ -454,6 +465,7 @@ checked_add!(balance, amount).expect("Overflow detected");
 ## Support
 
 For contract development issues:
+
 - Check Soroban documentation
 - Review example contracts
 - Create GitHub issue with contract code and error details

@@ -1,29 +1,29 @@
-import { logger } from './logger.js';
+import { logger } from "./logger.js";
 
 export const CircuitState = {
-  CLOSED: 'closed',     // Normal operation
-  OPEN: 'open',         // Circuit is open, blocking requests
-  HALF_OPEN: 'half_open' // Testing if service has recovered
+  CLOSED: "closed", // Normal operation
+  OPEN: "open", // Circuit is open, blocking requests
+  HALF_OPEN: "half_open", // Testing if service has recovered
 };
 
 export class CircuitBreaker {
   constructor(options = {}) {
-    this.name = options.name || 'CircuitBreaker';
+    this.name = options.name || "CircuitBreaker";
     this.failureThreshold = options.failureThreshold || 5;
     this.resetTimeout = options.resetTimeout || 60000; // 1 minute
     this.monitoringPeriod = options.monitoringPeriod || 10000; // 10 seconds
-    
+
     this.state = CircuitState.CLOSED;
     this.failureCount = 0;
     this.lastFailureTime = null;
     this.successCount = 0;
     this.lastStateChange = Date.now();
-    
+
     this.onStateChange = options.onStateChange || null;
-    
+
     logger.info(`CircuitBreaker '${this.name}' initialized`, {
       failureThreshold: this.failureThreshold,
-      resetTimeout: this.resetTimeout
+      resetTimeout: this.resetTimeout,
     });
   }
 
@@ -32,8 +32,10 @@ export class CircuitBreaker {
       if (this.shouldAttemptReset()) {
         this.transitionTo(CircuitState.HALF_OPEN);
       } else {
-        const error = new Error(`CircuitBreaker '${this.name}' is OPEN - blocking request`);
-        error.code = 'CIRCUIT_OPEN';
+        const error = new Error(
+          `CircuitBreaker '${this.name}' is OPEN - blocking request`,
+        );
+        error.code = "CIRCUIT_OPEN";
         throw error;
       }
     }
@@ -51,7 +53,7 @@ export class CircuitBreaker {
   onSuccess() {
     if (this.state === CircuitState.HALF_OPEN) {
       this.successCount++;
-      
+
       // If we get enough successes in half-open state, close the circuit
       if (this.successCount >= 2) {
         this.transitionTo(CircuitState.CLOSED);
@@ -65,11 +67,11 @@ export class CircuitBreaker {
   onFailure(error) {
     this.failureCount++;
     this.lastFailureTime = Date.now();
-    
+
     logger.warn(`CircuitBreaker '${this.name}' failure`, {
       failureCount: this.failureCount,
       threshold: this.failureThreshold,
-      error: error.message
+      error: error.message,
     });
 
     if (this.failureCount >= this.failureThreshold) {
@@ -83,7 +85,7 @@ export class CircuitBreaker {
     if (!this.lastFailureTime) {
       return true;
     }
-    
+
     const timeSinceLastFailure = Date.now() - this.lastFailureTime;
     return timeSinceLastFailure >= this.resetTimeout;
   }
@@ -92,7 +94,7 @@ export class CircuitBreaker {
     const oldState = this.state;
     this.state = newState;
     this.lastStateChange = Date.now();
-    
+
     // Reset counters when transitioning
     if (newState === CircuitState.CLOSED) {
       this.failureCount = 0;
@@ -105,7 +107,7 @@ export class CircuitBreaker {
 
     logger.info(`CircuitBreaker '${this.name}' state transition`, {
       from: oldState,
-      to: newState
+      to: newState,
     });
 
     if (this.onStateChange) {
@@ -121,7 +123,7 @@ export class CircuitBreaker {
       successCount: this.successCount,
       lastFailureTime: this.lastFailureTime,
       lastStateChange: this.lastStateChange,
-      timeInCurrentState: Date.now() - this.lastStateChange
+      timeInCurrentState: Date.now() - this.lastStateChange,
     };
   }
 

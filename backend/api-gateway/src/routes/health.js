@@ -1,20 +1,20 @@
-import express from 'express';
+import express from "express";
 
 const router = express.Router();
 
-router.get('/', (req, res) => {
+router.get("/", (req, res) => {
   res.json({
-    status: 'healthy',
-    service: 'api-gateway',
+    status: "healthy",
+    service: "api-gateway",
     timestamp: new Date().toISOString(),
-    uptime: process.uptime()
+    uptime: process.uptime(),
   });
 });
 
-router.get('/ready', (req, res) => {
+router.get("/ready", (req, res) => {
   res.json({
-    status: 'ready',
-    timestamp: new Date().toISOString()
+    status: "ready",
+    timestamp: new Date().toISOString(),
   });
 });
 

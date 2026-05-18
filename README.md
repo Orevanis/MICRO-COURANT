@@ -150,18 +150,23 @@ npm run dev:governance
 ## Smart Contracts
 
 ### EnergyMeterRegistry
+
 Registers energy meters and links them to on-chain identities with trust scores.
 
 ### ConsumptionBilling
+
 Tracks energy usage records, converts consumption to payable units, and deducts balances.
 
 ### P2PEnergyTrading
+
 Enables peer-to-peer energy trading within microgrids with automated matching and settlement.
 
 ### SubsidyGovernance
+
 Community voting system for tariffs and subsidies with automatic discount application.
 
 ### GridSettlement
+
 Final settlement layer for all energy transactions with atomic settlement guarantees.
 
 ## Testing
@@ -183,11 +188,13 @@ npm run test:frontend
 ## Deployment
 
 ### Local Development
+
 ```bash
 npm run docker:up
 ```
 
 ### Testnet Deployment
+
 ```bash
 # Configure testnet environment
 cp .env.testnet.example .env
@@ -200,6 +207,7 @@ kubectl apply -f infra/kubernetes/testnet/
 ```
 
 ### Production Deployment
+
 See [Deployment Guide](docs/guides/deployment.md) for production deployment instructions.
 
 ## Documentation
@@ -229,6 +237,7 @@ MIT License - see [LICENSE](LICENSE) for details.
 ## Acknowledgments
 
 Built with:
+
 - Stellar & Soroban
 - React & React Native
 - Node.js

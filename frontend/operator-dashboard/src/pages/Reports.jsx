@@ -1,25 +1,49 @@
-import { FileText, Download, Calendar, TrendingUp } from 'lucide-react';
+import { FileText, Download, Calendar, TrendingUp } from "lucide-react";
 
 export default function Reports() {
   const reports = [
-    { id: 1, name: 'Monthly Revenue Report', type: 'financial', date: '2024-01-15', status: 'ready' },
-    { id: 2, name: 'Grid Load Analysis', type: 'operational', date: '2024-01-14', status: 'ready' },
-    { id: 3, name: 'Customer Usage Summary', type: 'usage', date: '2024-01-13', status: 'generating' },
-    { id: 4, name: 'Fraud Detection Report', type: 'security', date: '2024-01-12', status: 'ready' },
+    {
+      id: 1,
+      name: "Monthly Revenue Report",
+      type: "financial",
+      date: "2024-01-15",
+      status: "ready",
+    },
+    {
+      id: 2,
+      name: "Grid Load Analysis",
+      type: "operational",
+      date: "2024-01-14",
+      status: "ready",
+    },
+    {
+      id: 3,
+      name: "Customer Usage Summary",
+      type: "usage",
+      date: "2024-01-13",
+      status: "generating",
+    },
+    {
+      id: 4,
+      name: "Fraud Detection Report",
+      type: "security",
+      date: "2024-01-12",
+      status: "ready",
+    },
   ];
 
   const getTypeBadge = (type) => {
     switch (type) {
-      case 'financial':
-        return 'bg-green-100 text-green-800';
-      case 'operational':
-        return 'bg-blue-100 text-blue-800';
-      case 'usage':
-        return 'bg-purple-100 text-purple-800';
-      case 'security':
-        return 'bg-red-100 text-red-800';
+      case "financial":
+        return "bg-green-100 text-green-800";
+      case "operational":
+        return "bg-blue-100 text-blue-800";
+      case "usage":
+        return "bg-purple-100 text-purple-800";
+      case "security":
+        return "bg-red-100 text-red-800";
       default:
-        return 'bg-gray-100 text-gray-800';
+        return "bg-gray-100 text-gray-800";
     }
   };
 
@@ -45,7 +69,9 @@ export default function Reports() {
             </div>
             <h3 className="font-semibold">Financial</h3>
           </div>
-          <p className="text-sm text-gray-600">Revenue, payments, and billing reports</p>
+          <p className="text-sm text-gray-600">
+            Revenue, payments, and billing reports
+          </p>
         </div>
 
         <div className="card hover:shadow-lg transition-shadow cursor-pointer">
@@ -55,7 +81,9 @@ export default function Reports() {
             </div>
             <h3 className="font-semibold">Operational</h3>
           </div>
-          <p className="text-sm text-gray-600">Grid load, meter status, and performance</p>
+          <p className="text-sm text-gray-600">
+            Grid load, meter status, and performance
+          </p>
         </div>
 
         <div className="card hover:shadow-lg transition-shadow cursor-pointer">
@@ -75,7 +103,9 @@ export default function Reports() {
             </div>
             <h3 className="font-semibold">Security</h3>
           </div>
-          <p className="text-sm text-gray-600">Fraud detection and enforcement</p>
+          <p className="text-sm text-gray-600">
+            Fraud detection and enforcement
+          </p>
         </div>
       </div>
 
@@ -84,13 +114,18 @@ export default function Reports() {
         <h2 className="text-lg font-semibold mb-4">Recent Reports</h2>
         <div className="space-y-3">
           {reports.map((report) => (
-            <div key={report.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50">
+            <div
+              key={report.id}
+              className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50"
+            >
               <div className="flex items-center space-x-4">
                 <FileText className="text-gray-400" size={24} />
                 <div>
                   <p className="font-medium">{report.name}</p>
                   <div className="flex items-center space-x-2 text-sm text-gray-600">
-                    <span className={`px-2 py-0.5 rounded text-xs ${getTypeBadge(report.type)}`}>
+                    <span
+                      className={`px-2 py-0.5 rounded text-xs ${getTypeBadge(report.type)}`}
+                    >
                       {report.type}
                     </span>
                     <span>•</span>
@@ -99,12 +134,16 @@ export default function Reports() {
                 </div>
               </div>
               <div className="flex items-center space-x-2">
-                <span className={`text-sm ${
-                  report.status === 'ready' ? 'text-green-600' : 'text-yellow-600'
-                }`}>
-                  {report.status === 'ready' ? 'Ready' : 'Generating...'}
+                <span
+                  className={`text-sm ${
+                    report.status === "ready"
+                      ? "text-green-600"
+                      : "text-yellow-600"
+                  }`}
+                >
+                  {report.status === "ready" ? "Ready" : "Generating..."}
                 </span>
-                {report.status === 'ready' && (
+                {report.status === "ready" && (
                   <button className="p-2 hover:bg-gray-100 rounded-lg">
                     <Download className="text-gray-600" size={20} />
                   </button>
@@ -120,7 +159,9 @@ export default function Reports() {
         <h2 className="text-lg font-semibold mb-4">Generate Custom Report</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Report Type</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Report Type
+            </label>
             <select className="input-field">
               <option>Financial Report</option>
               <option>Usage Report</option>
@@ -129,7 +170,9 @@ export default function Reports() {
             </select>
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Date Range</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Date Range
+            </label>
             <select className="input-field">
               <option>Last 7 days</option>
               <option>Last 30 days</option>
@@ -138,7 +181,9 @@ export default function Reports() {
             </select>
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Format</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Format
+            </label>
             <select className="input-field">
               <option>PDF</option>
               <option>CSV</option>

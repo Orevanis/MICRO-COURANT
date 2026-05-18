@@ -56,6 +56,7 @@ Error responses:
 Authenticate using a Stellar wallet signature.
 
 **Request Body:**
+
 ```json
 {
   "stellar_address": "G...",
@@ -64,6 +65,7 @@ Authenticate using a Stellar wallet signature.
 ```
 
 **Response:**
+
 ```json
 {
   "token": "jwt_token",
@@ -82,6 +84,7 @@ Authenticate using a Stellar wallet signature.
 Refresh an expired JWT token.
 
 **Request Body:**
+
 ```json
 {
   "token": "expired_token"
@@ -89,6 +92,7 @@ Refresh an expired JWT token.
 ```
 
 **Response:**
+
 ```json
 {
   "token": "new_jwt_token"
@@ -102,11 +106,13 @@ Refresh an expired JWT token.
 Verify if a token is valid.
 
 **Headers:**
+
 ```
 Authorization: Bearer <token>
 ```
 
 **Response:**
+
 ```json
 {
   "valid": true,
@@ -129,6 +135,7 @@ Authorization: Bearer <token>
 Submit a single meter reading.
 
 **Request Body:**
+
 ```json
 {
   "meter_id": "MTR-0001",
@@ -140,6 +147,7 @@ Submit a single meter reading.
 ```
 
 **Response:**
+
 ```json
 {
   "status": "queued",
@@ -154,6 +162,7 @@ Submit a single meter reading.
 Submit multiple meter readings.
 
 **Request Body:**
+
 ```json
 {
   "readings": [
@@ -176,6 +185,7 @@ Submit multiple meter readings.
 ```
 
 **Response:**
+
 ```json
 {
   "status": "queued",
@@ -191,9 +201,11 @@ Submit multiple meter readings.
 Retrieve statistics for a specific meter.
 
 **Query Parameters:**
+
 - `period`: `hour` | `day` | `week` | `month` (default: `day`)
 
 **Response:**
+
 ```json
 {
   "meter_id": "MTR-0001",
@@ -218,6 +230,7 @@ Retrieve statistics for a specific meter.
 Retrieve current grid load statistics.
 
 **Response:**
+
 ```json
 {
   "current_load": 85.6,
@@ -245,6 +258,7 @@ Retrieve current grid load statistics.
 Retrieve current balance for a household.
 
 **Response:**
+
 ```json
 {
   "household_id": "HH-001",
@@ -263,6 +277,7 @@ Retrieve current balance for a household.
 Add funds to a household balance.
 
 **Request Body:**
+
 ```json
 {
   "household_id": "HH-001",
@@ -273,6 +288,7 @@ Add funds to a household balance.
 ```
 
 **Response:**
+
 ```json
 {
   "status": "success",
@@ -290,6 +306,7 @@ Add funds to a household balance.
 Retrieve current tariff rate.
 
 **Response:**
+
 ```json
 {
   "base_rate": 100,
@@ -316,6 +333,7 @@ Retrieve current tariff rate.
 Manually trigger billing processing for a household.
 
 **Request Body:**
+
 ```json
 {
   "household_id": "HH-001",
@@ -325,6 +343,7 @@ Manually trigger billing processing for a household.
 ```
 
 **Response:**
+
 ```json
 {
   "billing_id": "bill_123456",
@@ -346,6 +365,7 @@ Manually trigger billing processing for a household.
 Register a new identity with WaveID.
 
 **Request Body:**
+
 ```json
 {
   "stellar_address": "G...",
@@ -358,6 +378,7 @@ Register a new identity with WaveID.
 ```
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -374,6 +395,7 @@ Register a new identity with WaveID.
 Retrieve identity information.
 
 **Response:**
+
 ```json
 {
   "id": "uuid-1234",
@@ -395,6 +417,7 @@ Retrieve identity information.
 Verify an identity using a signature.
 
 **Request Body:**
+
 ```json
 {
   "stellar_address": "G...",
@@ -403,6 +426,7 @@ Verify an identity using a signature.
 ```
 
 **Response:**
+
 ```json
 {
   "verified": true,
@@ -425,6 +449,7 @@ Verify an identity using a signature.
 Create a new settlement transaction.
 
 **Request Body:**
+
 ```json
 {
   "type": "consumption_billing",
@@ -436,6 +461,7 @@ Create a new settlement transaction.
 ```
 
 **Response:**
+
 ```json
 {
   "settlement_id": "set_123456",
@@ -452,6 +478,7 @@ Create a new settlement transaction.
 Process pending settlement transactions.
 
 **Request Body:**
+
 ```json
 {
   "batch_size": 10
@@ -459,6 +486,7 @@ Process pending settlement transactions.
 ```
 
 **Response:**
+
 ```json
 {
   "processed": 10,
@@ -481,6 +509,7 @@ Process pending settlement transactions.
 Retrieve settlement status.
 
 **Response:**
+
 ```json
 {
   "settlement_id": "set_123456",
@@ -503,6 +532,7 @@ Retrieve settlement status.
 Create a new governance proposal.
 
 **Request Body:**
+
 ```json
 {
   "proposer": "G...",
@@ -514,6 +544,7 @@ Create a new governance proposal.
 ```
 
 **Response:**
+
 ```json
 {
   "proposal_id": "prop_123456",
@@ -529,6 +560,7 @@ Create a new governance proposal.
 Cast a vote on a proposal.
 
 **Request Body:**
+
 ```json
 {
   "voter": "G...",
@@ -538,6 +570,7 @@ Cast a vote on a proposal.
 ```
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -552,6 +585,7 @@ Cast a vote on a proposal.
 Finalize a proposal and determine outcome.
 
 **Response:**
+
 ```json
 {
   "proposal_id": "prop_123456",
@@ -574,6 +608,7 @@ Finalize a proposal and determine outcome.
 Create a new energy offer.
 
 **Request Body:**
+
 ```json
 {
   "producer_address": "G...",
@@ -584,6 +619,7 @@ Create a new energy offer.
 ```
 
 **Response:**
+
 ```json
 {
   "offer_id": "offer_123456",
@@ -599,6 +635,7 @@ Create a new energy offer.
 Create a new energy request.
 
 **Request Body:**
+
 ```json
 {
   "consumer_address": "G...",
@@ -609,6 +646,7 @@ Create a new energy request.
 ```
 
 **Response:**
+
 ```json
 {
   "request_id": "req_123456",
@@ -624,6 +662,7 @@ Create a new energy request.
 Match an offer with a request.
 
 **Request Body:**
+
 ```json
 {
   "offer_id": "offer_123456",
@@ -632,6 +671,7 @@ Match an offer with a request.
 ```
 
 **Response:**
+
 ```json
 {
   "trade_id": "trade_123456",
@@ -653,6 +693,7 @@ Match an offer with a request.
 Check service health status.
 
 **Response:**
+
 ```json
 {
   "status": "healthy",
@@ -668,6 +709,7 @@ Check service health status.
 Check if service is ready to accept traffic.
 
 **Response:**
+
 ```json
 {
   "status": "ready",
@@ -679,20 +721,20 @@ Check if service is ready to accept traffic.
 
 ## Error Codes
 
-| Code | Description |
-|------|-------------|
-| `AUTH_REQUIRED` | Authentication token missing or invalid |
-| `INSUFFICIENT_PERMISSIONS` | User lacks required permissions |
-| `RATE_LIMIT_EXCEEDED` | Rate limit exceeded |
-| `INVALID_REQUEST` | Request validation failed |
-| `RESOURCE_NOT_FOUND` | Requested resource does not exist |
-| `INSUFFICIENT_BALANCE` | Insufficient balance for operation |
-| `METER_NOT_FOUND` | Meter ID not found |
-| `HOUSEHOLD_NOT_FOUND` | Household ID not found |
-| `SETTLEMENT_FAILED` | Settlement transaction failed |
-| `PROPOSAL_NOT_ACTIVE` | Proposal is not in voting state |
-| `TRADE_EXPIRED` | Trade offer/request has expired |
-| `INTERNAL_ERROR` | Internal server error |
+| Code                       | Description                             |
+| -------------------------- | --------------------------------------- |
+| `AUTH_REQUIRED`            | Authentication token missing or invalid |
+| `INSUFFICIENT_PERMISSIONS` | User lacks required permissions         |
+| `RATE_LIMIT_EXCEEDED`      | Rate limit exceeded                     |
+| `INVALID_REQUEST`          | Request validation failed               |
+| `RESOURCE_NOT_FOUND`       | Requested resource does not exist       |
+| `INSUFFICIENT_BALANCE`     | Insufficient balance for operation      |
+| `METER_NOT_FOUND`          | Meter ID not found                      |
+| `HOUSEHOLD_NOT_FOUND`      | Household ID not found                  |
+| `SETTLEMENT_FAILED`        | Settlement transaction failed           |
+| `PROPOSAL_NOT_ACTIVE`      | Proposal is not in voting state         |
+| `TRADE_EXPIRED`            | Trade offer/request has expired         |
+| `INTERNAL_ERROR`           | Internal server error                   |
 
 ---
 
@@ -705,6 +747,7 @@ Check if service is ready to accept traffic.
 Subscribe to real-time meter readings.
 
 **Message Format:**
+
 ```json
 {
   "meter_id": "MTR-0001",
@@ -720,6 +763,7 @@ Subscribe to real-time meter readings.
 Subscribe to real-time grid load updates.
 
 **Message Format:**
+
 ```json
 {
   "current_load": 85.6,
@@ -736,6 +780,7 @@ Subscribe to real-time grid load updates.
 Subscribe to settlement status updates.
 
 **Message Format:**
+
 ```json
 {
   "settlement_id": "set_123456",

@@ -1,18 +1,43 @@
-import { useEnergyStore } from '../stores/energyStore';
-import { Wallet, ArrowDown, ArrowUp, Clock } from 'lucide-react';
+import { useEnergyStore } from "../stores/energyStore";
+import { Wallet, ArrowDown, ArrowUp, Clock } from "lucide-react";
 
 export default function Balance() {
   const { currentBalance, tariffRate } = useEnergyStore();
-  
+
   const balanceInXLM = (currentBalance / 10000000).toFixed(2);
   const estimatedDailyCost = (10 * tariffRate) / 10000000; // Assuming 10 kWh daily
-  const daysRemaining = currentBalance > 0 ? (currentBalance / (10 * tariffRate)).toFixed(0) : 0;
+  const daysRemaining =
+    currentBalance > 0 ? (currentBalance / (10 * tariffRate)).toFixed(0) : 0;
 
   const transactions = [
-    { id: 1, type: 'credit', description: 'Recharge via Stellar', amount: 50, date: '2024-01-15' },
-    { id: 2, type: 'debit', description: 'Daily consumption', amount: -1.5, date: '2024-01-15' },
-    { id: 3, type: 'debit', description: 'Daily consumption', amount: -1.8, date: '2024-01-14' },
-    { id: 4, type: 'credit', description: 'Subsidy applied', amount: 5, date: '2024-01-14' },
+    {
+      id: 1,
+      type: "credit",
+      description: "Recharge via Stellar",
+      amount: 50,
+      date: "2024-01-15",
+    },
+    {
+      id: 2,
+      type: "debit",
+      description: "Daily consumption",
+      amount: -1.5,
+      date: "2024-01-15",
+    },
+    {
+      id: 3,
+      type: "debit",
+      description: "Daily consumption",
+      amount: -1.8,
+      date: "2024-01-14",
+    },
+    {
+      id: 4,
+      type: "credit",
+      description: "Subsidy applied",
+      amount: 5,
+      date: "2024-01-14",
+    },
   ];
 
   return (
@@ -34,12 +59,14 @@ export default function Balance() {
           </div>
           <Wallet size={64} className="text-primary-200" />
         </div>
-        
+
         <div className="mt-6 pt-6 border-t border-primary-400">
           <div className="grid grid-cols-2 gap-4">
             <div>
               <p className="text-primary-100 text-sm">Estimated Daily Cost</p>
-              <p className="text-xl font-semibold">{estimatedDailyCost.toFixed(2)} XLM</p>
+              <p className="text-xl font-semibold">
+                {estimatedDailyCost.toFixed(2)} XLM
+              </p>
             </div>
             <div>
               <p className="text-primary-100 text-sm">Days Remaining</p>
@@ -66,12 +93,19 @@ export default function Balance() {
         <h2 className="text-lg font-semibold mb-4">Transaction History</h2>
         <div className="space-y-3">
           {transactions.map((transaction) => (
-            <div key={transaction.id} className="flex items-center justify-between py-3 border-b last:border-b-0">
+            <div
+              key={transaction.id}
+              className="flex items-center justify-between py-3 border-b last:border-b-0"
+            >
               <div className="flex items-center space-x-3">
-                <div className={`p-2 rounded-lg ${
-                  transaction.type === 'credit' ? 'bg-green-100' : 'bg-red-100'
-                }`}>
-                  {transaction.type === 'credit' ? (
+                <div
+                  className={`p-2 rounded-lg ${
+                    transaction.type === "credit"
+                      ? "bg-green-100"
+                      : "bg-red-100"
+                  }`}
+                >
+                  {transaction.type === "credit" ? (
                     <ArrowDown className="text-green-600" size={20} />
                   ) : (
                     <ArrowUp className="text-red-600" size={20} />
@@ -85,10 +119,15 @@ export default function Balance() {
                   </p>
                 </div>
               </div>
-              <p className={`font-semibold ${
-                transaction.type === 'credit' ? 'text-green-600' : 'text-red-600'
-              }`}>
-                {transaction.amount > 0 ? '+' : ''}{transaction.amount.toFixed(2)} XLM
+              <p
+                className={`font-semibold ${
+                  transaction.type === "credit"
+                    ? "text-green-600"
+                    : "text-red-600"
+                }`}
+              >
+                {transaction.amount > 0 ? "+" : ""}
+                {transaction.amount.toFixed(2)} XLM
               </p>
             </div>
           ))}
@@ -101,7 +140,9 @@ export default function Balance() {
         <div className="space-y-3">
           <div className="flex justify-between py-2 border-b">
             <span className="text-gray-600">Tariff Rate</span>
-            <span className="font-medium">{(tariffRate / 10000000).toFixed(7)} XLM/kWh</span>
+            <span className="font-medium">
+              {(tariffRate / 10000000).toFixed(7)} XLM/kWh
+            </span>
           </div>
           <div className="flex justify-between py-2 border-b">
             <span className="text-gray-600">Billing Cycle</span>

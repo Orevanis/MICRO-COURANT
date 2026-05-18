@@ -1,22 +1,22 @@
-import { Edit, Save, TrendingUp, Calculator, History } from 'lucide-react';
-import { useState } from 'react';
+import { Edit, Save, TrendingUp, Calculator, History } from "lucide-react";
+import { useState } from "react";
 
 export default function Tariffs() {
   const [editing, setEditing] = useState(false);
   const [currentTariff, setCurrentTariff] = useState(100);
 
   const tariffHistory = [
-    { date: '2024-01-01', rate: 100, reason: 'Standard rate' },
-    { date: '2023-07-01', rate: 95, reason: 'Summer discount' },
-    { date: '2023-01-01', rate: 100, reason: 'Standard rate' },
-    { date: '2022-07-01', rate: 90, reason: 'Promotional rate' },
+    { date: "2024-01-01", rate: 100, reason: "Standard rate" },
+    { date: "2023-07-01", rate: 95, reason: "Summer discount" },
+    { date: "2023-01-01", rate: 100, reason: "Standard rate" },
+    { date: "2022-07-01", rate: 90, reason: "Promotional rate" },
   ];
 
   const tariffStructure = [
-    { tier: '0-10 kWh', rate: 100, description: 'Basic consumption' },
-    { tier: '10-50 kWh', rate: 95, description: 'Standard household' },
-    { tier: '50-100 kWh', rate: 90, description: 'High consumption' },
-    { tier: '100+ kWh', rate: 85, description: 'Industrial rate' },
+    { tier: "0-10 kWh", rate: 100, description: "Basic consumption" },
+    { tier: "10-50 kWh", rate: 95, description: "Standard household" },
+    { tier: "50-100 kWh", rate: 90, description: "High consumption" },
+    { tier: "100+ kWh", rate: 85, description: "Industrial rate" },
   ];
 
   return (
@@ -41,7 +41,7 @@ export default function Tariffs() {
                     className="input-field w-32"
                   />
                   <span className="text-gray-600">stroops/kWh</span>
-                  <button 
+                  <button
                     onClick={() => setEditing(false)}
                     className="p-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
                   >
@@ -50,9 +50,11 @@ export default function Tariffs() {
                 </div>
               ) : (
                 <>
-                  <p className="text-4xl font-bold text-gray-900">{currentTariff}</p>
+                  <p className="text-4xl font-bold text-gray-900">
+                    {currentTariff}
+                  </p>
                   <p className="text-gray-600 ml-2">stroops/kWh</p>
-                  <button 
+                  <button
                     onClick={() => setEditing(true)}
                     className="ml-4 p-2 bg-white rounded-lg hover:bg-gray-100"
                   >
@@ -74,16 +76,25 @@ export default function Tariffs() {
         <h2 className="text-lg font-semibold mb-4">Tiered Pricing Structure</h2>
         <div className="space-y-3">
           {tariffStructure.map((tier, index) => (
-            <div key={index} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+            <div
+              key={index}
+              className="flex items-center justify-between p-4 bg-gray-50 rounded-lg"
+            >
               <div className="flex-1">
                 <div className="flex items-center space-x-3">
                   <span className="font-semibold">{tier.tier}</span>
-                  <span className="text-sm text-gray-600">{tier.description}</span>
+                  <span className="text-sm text-gray-600">
+                    {tier.description}
+                  </span>
                 </div>
               </div>
               <div className="flex items-center space-x-4">
-                <span className="text-lg font-bold">{tier.rate} stroops/kWh</span>
-                <button className="text-sm text-blue-600 hover:text-blue-700">Edit</button>
+                <span className="text-lg font-bold">
+                  {tier.rate} stroops/kWh
+                </span>
+                <button className="text-sm text-blue-600 hover:text-blue-700">
+                  Edit
+                </button>
               </div>
             </div>
           ))}
@@ -97,11 +108,16 @@ export default function Tariffs() {
             <History size={20} />
             <span>Tariff History</span>
           </h2>
-          <button className="text-sm text-purple-600 hover:text-purple-700">View Full History</button>
+          <button className="text-sm text-purple-600 hover:text-purple-700">
+            View Full History
+          </button>
         </div>
         <div className="space-y-3">
           {tariffHistory.map((entry, index) => (
-            <div key={index} className="flex items-center justify-between py-2 border-b last:border-b-0">
+            <div
+              key={index}
+              className="flex items-center justify-between py-2 border-b last:border-b-0"
+            >
               <div className="flex items-center space-x-4">
                 <span className="text-sm text-gray-600">{entry.date}</span>
                 <span className="font-medium">{entry.rate} stroops/kWh</span>
@@ -116,19 +132,26 @@ export default function Tariffs() {
       <div className="card">
         <h2 className="text-lg font-semibold mb-4">Propose Tariff Change</h2>
         <p className="text-sm text-gray-600 mb-4">
-          Tariff changes require community approval through the governance process.
+          Tariff changes require community approval through the governance
+          process.
         </p>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">New Rate (stroops/kWh)</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              New Rate (stroops/kWh)
+            </label>
             <input type="number" className="input-field" placeholder="95" />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Effective Date</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Effective Date
+            </label>
             <input type="date" className="input-field" />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Reason</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Reason
+            </label>
             <select className="input-field">
               <option>Cost adjustment</option>
               <option>Seasonal variation</option>
@@ -137,8 +160,14 @@ export default function Tariffs() {
             </select>
           </div>
           <div className="md:col-span-3">
-            <label className="block text-sm font-medium text-gray-700 mb-1">Justification</label>
-            <textarea className="input-field" rows={3} placeholder="Explain the reason for this tariff change" />
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Justification
+            </label>
+            <textarea
+              className="input-field"
+              rows={3}
+              placeholder="Explain the reason for this tariff change"
+            />
           </div>
           <div className="md:col-span-3">
             <button className="btn-primary">Create Governance Proposal</button>

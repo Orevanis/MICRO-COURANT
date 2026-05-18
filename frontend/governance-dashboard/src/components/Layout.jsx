@@ -1,16 +1,16 @@
-import { Outlet, Link, useLocation } from 'react-router-dom';
-import { 
-  LayoutDashboard, 
-  FileText, 
-  DollarSign, 
-  Calculator, 
-  Vote, 
+import { Outlet, Link, useLocation } from "react-router-dom";
+import {
+  LayoutDashboard,
+  FileText,
+  DollarSign,
+  Calculator,
+  Vote,
   LogOut,
   Menu,
-  X
-} from 'lucide-react';
-import { useState } from 'react';
-import { useAuthStore } from '../stores/authStore';
+  X,
+} from "lucide-react";
+import { useState } from "react";
+import { useAuthStore } from "../stores/authStore";
 
 export default function Layout() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -18,11 +18,11 @@ export default function Layout() {
   const { user, logout } = useAuthStore();
 
   const navigation = [
-    { name: 'Dashboard', href: '/', icon: LayoutDashboard },
-    { name: 'Proposals', href: '/proposals', icon: FileText },
-    { name: 'Subsidies', href: '/subsidies', icon: DollarSign },
-    { name: 'Tariffs', href: '/tariffs', icon: Calculator },
-    { name: 'Voting', href: '/voting', icon: Vote },
+    { name: "Dashboard", href: "/", icon: LayoutDashboard },
+    { name: "Proposals", href: "/proposals", icon: FileText },
+    { name: "Subsidies", href: "/subsidies", icon: DollarSign },
+    { name: "Tariffs", href: "/tariffs", icon: Calculator },
+    { name: "Voting", href: "/voting", icon: Vote },
   ];
 
   return (
@@ -30,7 +30,9 @@ export default function Layout() {
       {/* Mobile header */}
       <header className="bg-white shadow-sm lg:hidden">
         <div className="px-4 py-3 flex items-center justify-between">
-          <h1 className="text-xl font-bold text-purple-600">Micro-Courant Governance</h1>
+          <h1 className="text-xl font-bold text-purple-600">
+            Micro-Courant Governance
+          </h1>
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             className="p-2 rounded-lg hover:bg-gray-100"
@@ -53,8 +55,8 @@ export default function Layout() {
                   onClick={() => setMobileMenuOpen(false)}
                   className={`flex items-center space-x-3 px-3 py-2 rounded-lg ${
                     location.pathname === item.href
-                      ? 'bg-purple-50 text-purple-600'
-                      : 'text-gray-700 hover:bg-gray-50'
+                      ? "bg-purple-50 text-purple-600"
+                      : "text-gray-700 hover:bg-gray-50"
                   }`}
                 >
                   <Icon size={20} />
@@ -70,10 +72,12 @@ export default function Layout() {
         {/* Desktop sidebar */}
         <aside className="hidden lg:block w-64 bg-white shadow-sm min-h-screen">
           <div className="p-6">
-            <h1 className="text-2xl font-bold text-purple-600">Micro-Courant</h1>
+            <h1 className="text-2xl font-bold text-purple-600">
+              Micro-Courant
+            </h1>
             <p className="text-sm text-gray-500 mt-1">Governance Portal</p>
           </div>
-          
+
           <nav className="px-4 space-y-1">
             {navigation.map((item) => {
               const Icon = item.icon;
@@ -83,8 +87,8 @@ export default function Layout() {
                   to={item.href}
                   className={`flex items-center space-x-3 px-3 py-2 rounded-lg transition-colors ${
                     location.pathname === item.href
-                      ? 'bg-purple-50 text-purple-600'
-                      : 'text-gray-700 hover:bg-gray-50'
+                      ? "bg-purple-50 text-purple-600"
+                      : "text-gray-700 hover:bg-gray-50"
                   }`}
                 >
                   <Icon size={20} />

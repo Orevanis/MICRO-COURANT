@@ -1,26 +1,26 @@
-import { describe, it, expect } from '@jest/globals';
-import jwt from 'jsonwebtoken';
-import { authMiddleware } from '../src/middleware/auth.js';
+import { describe, it, expect } from "@jest/globals";
+import jwt from "jsonwebtoken";
+import { authMiddleware } from "../src/middleware/auth.js";
 
-describe('Auth Middleware', () => {
-  const mockSecret = 'test_secret';
+describe("Auth Middleware", () => {
+  const mockSecret = "test_secret";
 
-  it('should allow requests with valid token', () => {
+  it("should allow requests with valid token", () => {
     const token = jwt.sign(
-      { id: 'test-user', stellar_address: 'GTEST', role: 'household' },
+      { id: "test-user", stellar_address: "GTEST", role: "household" },
       mockSecret,
-      { expiresIn: '1h' }
+      { expiresIn: "1h" },
     );
 
     const req = {
       headers: {
-        authorization: `Bearer ${token}`
-      }
+        authorization: `Bearer ${token}`,
+      },
     };
 
     const res = {
       status: jest.fn().mockReturnThis(),
-      json: jest.fn().mockReturnThis()
+      json: jest.fn().mockReturnThis(),
     };
 
     const next = jest.fn();
@@ -32,17 +32,17 @@ describe('Auth Middleware', () => {
 
     expect(next).toHaveBeenCalled();
     expect(req.user).toBeDefined();
-    expect(req.user.id).toBe('test-user');
+    expect(req.user.id).toBe("test-user");
   });
 
-  it('should reject requests without token', () => {
+  it("should reject requests without token", () => {
     const req = {
-      headers: {}
+      headers: {},
     };
 
     const res = {
       status: jest.fn().mockReturnThis(),
-      json: jest.fn().mockReturnThis()
+      json: jest.fn().mockReturnThis(),
     };
 
     const next = jest.fn();
@@ -53,22 +53,22 @@ describe('Auth Middleware', () => {
 
     expect(res.status).toHaveBeenCalledWith(401);
     expect(res.json).toHaveBeenCalledWith({
-      error: 'Unauthorized',
-      message: 'No token provided'
+      error: "Unauthorized",
+      message: "No token provided",
     });
     expect(next).not.toHaveBeenCalled();
   });
 
-  it('should reject requests with invalid token', () => {
+  it("should reject requests with invalid token", () => {
     const req = {
       headers: {
-        authorization: 'Bearer invalid_token'
-      }
+        authorization: "Bearer invalid_token",
+      },
     };
 
     const res = {
       status: jest.fn().mockReturnThis(),
-      json: jest.fn().mockReturnThis()
+      json: jest.fn().mockReturnThis(),
     };
 
     const next = jest.fn();
@@ -79,27 +79,27 @@ describe('Auth Middleware', () => {
 
     expect(res.status).toHaveBeenCalledWith(401);
     expect(res.json).toHaveBeenCalledWith({
-      error: 'Unauthorized',
-      message: 'Invalid token'
+      error: "Unauthorized",
+      message: "Invalid token",
     });
   });
 
-  it('should reject requests with expired token', () => {
+  it("should reject requests with expired token", () => {
     const token = jwt.sign(
-      { id: 'test-user' },
+      { id: "test-user" },
       mockSecret,
-      { expiresIn: '-1h' } // Already expired
+      { expiresIn: "-1h" }, // Already expired
     );
 
     const req = {
       headers: {
-        authorization: `Bearer ${token}`
-      }
+        authorization: `Bearer ${token}`,
+      },
     };
 
     const res = {
       status: jest.fn().mockReturnThis(),
-      json: jest.fn().mockReturnThis()
+      json: jest.fn().mockReturnThis(),
     };
 
     const next = jest.fn();
@@ -110,8 +110,8 @@ describe('Auth Middleware', () => {
 
     expect(res.status).toHaveBeenCalledWith(401);
     expect(res.json).toHaveBeenCalledWith({
-      error: 'Unauthorized',
-      message: 'Token expired'
+      error: "Unauthorized",
+      message: "Token expired",
     });
   });
 });

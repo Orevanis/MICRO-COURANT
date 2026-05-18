@@ -1,5 +1,5 @@
-import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
+import { create } from "zustand";
+import { persist } from "zustand/middleware";
 
 export const useEnergyStore = create(
   persist(
@@ -33,24 +33,24 @@ export const useEnergyStore = create(
 
       deductBalance: (amount) => {
         set((state) => ({
-          currentBalance: Math.max(0, state.currentBalance - amount)
+          currentBalance: Math.max(0, state.currentBalance - amount),
         }));
       },
 
       addUsage: (kwh) => {
         set((state) => ({
-          currentUsage: state.currentUsage + kwh
+          currentUsage: state.currentUsage + kwh,
         }));
-      }
+      },
     }),
     {
-      name: 'micro-courant-energy',
+      name: "micro-courant-energy",
       partialize: (state) => ({
         currentBalance: state.currentBalance,
         currentUsage: state.currentUsage,
         meterId: state.meterId,
-        householdId: state.householdId
-      })
-    }
-  )
+        householdId: state.householdId,
+      }),
+    },
+  ),
 );

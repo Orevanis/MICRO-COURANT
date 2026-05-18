@@ -1,7 +1,7 @@
-import pg from 'pg';
-import { Redis } from 'ioredis';
-import { logger } from '../utils/logger.js';
-import { config } from '../config/index.js';
+import pg from "pg";
+import { Redis } from "ioredis";
+import { logger } from "../utils/logger.js";
+import { config } from "../config/index.js";
 
 const { Pool } = pg;
 
@@ -18,30 +18,30 @@ export class BillingService {
       database: config.postgres.database,
       user: config.postgres.user,
       password: config.postgres.password,
-      max: 20
+      max: 20,
     });
 
     this.redis = new Redis({
       host: config.redis.host,
       port: config.redis.port,
-      password: config.redis.password
+      password: config.redis.password,
     });
 
-    logger.info('Billing service initialized');
+    logger.info("Billing service initialized");
   }
 
   async processBilling(householdId, consumptionKwh, meterId) {
     const client = await this.pool.connect();
-    
+
     try {
-      await client.query('BEGIN');
+      await client.query("BEGIN");
 
       // Get tariff rate
-      const tariffRate = await this.redis.get('tariff:rate') || 100;
-      
+      const tariffRate = (await this.redis.get("tariff:rate")) || 100;
+
       // Calculate base cost
       const cost = consumptionKwh * parseFloat(tariffRate);
-      
+
       // Check for applicable subsidies
       const subsidy = await this.applySubsidy(householdId, cost);
       const finalCost = cost - subsidy;
@@ -53,7 +53,7 @@ export class BillingService {
         VALUES ($1, $2, $3, $4, $5, $6, $7, NOW(), NOW() + INTERVAL '30 days', 'pending')
         RETURNING id
       `;
-      
+
       const result = await client.query(insertQuery, [
         householdId,
         meterId,
@@ -61,7 +61,7 @@ export class BillingService {
         tariffRate,
         cost,
         subsidy,
-        finalCost
+        finalCost,
       ]);
 
       const billingId = result.rows[0].id;
@@ -69,21 +69,23 @@ export class BillingService {
       // Update household balance
       await this.updateHouseholdBalance(client, householdId, finalCost);
 
-      await client.query('COMMIT');
+      await client.query("COMMIT");
 
-      logger.info(`Billing processed: ${billingId} for household ${householdId}`);
-      
-      return { 
+      logger.info(
+        `Billing processed: ${billingId} for household ${householdId}`,
+      );
+
+      return {
         billing_id: billingId,
         household_id: householdId,
         consumption_kwh: consumptionKwh,
         cost,
         subsidy_applied: subsidy,
-        final_cost
+        final_cost: finalCost,
       };
     } catch (error) {
-      await client.query('ROLLBACK');
-      logger.error('Billing processing error:', error);
+      await client.query("ROLLBACK");
+      logger.error("Billing processing error:", error);
       throw error;
     } finally {
       client.release();
@@ -98,17 +100,19 @@ export class BillingService {
       AND end_timestamp > NOW()
       AND $1 = ANY(eligible_households)
     `;
-    
+
     const result = await this.pool.query(query, [householdId]);
-    
+
     if (result.rows.length === 0) {
       return 0;
     }
 
     // Apply the highest discount subsidy
     const subsidies = result.rows;
-    const maxDiscount = Math.max(...subsidies.map(s => s.discount_percentage));
-    
+    const maxDiscount = Math.max(
+      ...subsidies.map((s) => s.discount_percentage),
+    );
+
     return (baseCost * maxDiscount) / 100;
   }
 
@@ -120,12 +124,12 @@ export class BillingService {
           updated_at = NOW()
       WHERE household_id = $3
     `;
-    
+
     await client.query(query, [amount, amount, householdId]);
 
     // Update Redis cache
     const balanceKey = `household:${householdId}:balance`;
-    const currentBalance = await this.redis.get(balanceKey) || 0;
+    const currentBalance = (await this.redis.get(balanceKey)) || 0;
     await this.redis.set(balanceKey, parseFloat(currentBalance) - amount);
   }
 
@@ -133,17 +137,18 @@ export class BillingService {
     // Try Redis first
     const balanceKey = `household:${householdId}:balance`;
     const cachedBalance = await this.redis.get(balanceKey);
-    
+
     if (cachedBalance !== null) {
       return {
         household_id: householdId,
         balance: parseFloat(cachedBalance),
-        source: 'cache'
+        source: "cache",
       };
     }
 
     // Query database
-    const query = 'SELECT current_balance FROM households WHERE household_id = $1';
+    const query =
+      "SELECT current_balance FROM households WHERE household_id = $1";
     const result = await this.pool.query(query, [householdId]);
 
     if (result.rows.length === 0) {
@@ -158,7 +163,7 @@ export class BillingService {
     return {
       household_id: householdId,
       balance,
-      source: 'database'
+      source: "database",
     };
   }
 
@@ -171,7 +176,7 @@ export class BillingService {
       WHERE household_id = $2
       RETURNING current_balance
     `;
-    
+
     const result = await this.pool.query(query, [amount, householdId]);
     const newBalance = result.rows[0].current_balance;
 
@@ -182,20 +187,20 @@ export class BillingService {
     return {
       household_id: householdId,
       previous_balance: newBalance - amount,
-      new_balance,
-      amount_added: amount
+      new_balance: newBalance,
+      amount_added: amount,
     };
   }
 
   async shutdown() {
     if (this.pool) {
       await this.pool.end();
-      logger.info('Billing service PostgreSQL connection closed');
+      logger.info("Billing service PostgreSQL connection closed");
     }
-    
+
     if (this.redis) {
       await this.redis.quit();
-      logger.info('Billing service Redis connection closed');
+      logger.info("Billing service Redis connection closed");
     }
   }
 }

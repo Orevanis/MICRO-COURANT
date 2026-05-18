@@ -1,10 +1,10 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useAuthStore } from '../stores/authStore';
-import { Users, Lock } from 'lucide-react';
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useAuthStore } from "../stores/authStore";
+import { Users, Lock } from "lucide-react";
 
 export default function Login() {
-  const [stellarAddress, setStellarAddress] = useState('');
+  const [stellarAddress, setStellarAddress] = useState("");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const { login } = useAuthStore();
@@ -12,24 +12,24 @@ export default function Login() {
   const handleLogin = async (e) => {
     e.preventDefault();
     setLoading(true);
-    
+
     try {
       // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+
       const mockUser = {
         id: stellarAddress,
         stellar_address: stellarAddress,
-        role: 'community_member',
-        name: 'Community Member'
+        role: "community_member",
+        name: "Community Member",
       };
-      
-      const mockToken = 'mock_governance_token_' + Date.now();
-      
+
+      const mockToken = "mock_governance_token_" + Date.now();
+
       login(mockUser, mockToken);
-      navigate('/');
+      navigate("/");
     } catch (error) {
-      console.error('Login failed:', error);
+      console.error("Login failed:", error);
     } finally {
       setLoading(false);
     }
@@ -67,13 +67,14 @@ export default function Login() {
             className="btn-primary w-full flex items-center justify-center space-x-2 py-3"
           >
             <Lock size={20} />
-            <span>{loading ? 'Verifying...' : 'Sign In with Stellar'}</span>
+            <span>{loading ? "Verifying..." : "Sign In with Stellar"}</span>
           </button>
         </form>
 
         <div className="mt-6 text-center">
           <p className="text-xs text-gray-500">
-            Connect with your Stellar wallet to participate in community governance.
+            Connect with your Stellar wallet to participate in community
+            governance.
           </p>
         </div>
       </div>

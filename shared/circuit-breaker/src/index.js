@@ -1,22 +1,22 @@
 export const CircuitState = {
-  CLOSED: 'closed',
-  OPEN: 'open',
-  HALF_OPEN: 'half_open'
+  CLOSED: "closed",
+  OPEN: "open",
+  HALF_OPEN: "half_open",
 };
 
 export class CircuitBreaker {
   constructor(options = {}) {
-    this.name = options.name || 'CircuitBreaker';
+    this.name = options.name || "CircuitBreaker";
     this.failureThreshold = options.failureThreshold || 5;
     this.resetTimeout = options.resetTimeout || 60000;
     this.monitoringPeriod = options.monitoringPeriod || 10000;
-    
+
     this.state = CircuitState.CLOSED;
     this.failureCount = 0;
     this.lastFailureTime = null;
     this.successCount = 0;
     this.lastStateChange = Date.now();
-    
+
     this.onStateChange = options.onStateChange || null;
   }
 
@@ -25,8 +25,10 @@ export class CircuitBreaker {
       if (this.shouldAttemptReset()) {
         this.transitionTo(CircuitState.HALF_OPEN);
       } else {
-        const error = new Error(`CircuitBreaker '${this.name}' is OPEN - blocking request`);
-        error.code = 'CIRCUIT_OPEN';
+        const error = new Error(
+          `CircuitBreaker '${this.name}' is OPEN - blocking request`,
+        );
+        error.code = "CIRCUIT_OPEN";
         throw error;
       }
     }
@@ -44,7 +46,7 @@ export class CircuitBreaker {
   onSuccess() {
     if (this.state === CircuitState.HALF_OPEN) {
       this.successCount++;
-      
+
       if (this.successCount >= 2) {
         this.transitionTo(CircuitState.CLOSED);
       }
@@ -68,7 +70,7 @@ export class CircuitBreaker {
     if (!this.lastFailureTime) {
       return true;
     }
-    
+
     const timeSinceLastFailure = Date.now() - this.lastFailureTime;
     return timeSinceLastFailure >= this.resetTimeout;
   }
@@ -77,7 +79,7 @@ export class CircuitBreaker {
     const oldState = this.state;
     this.state = newState;
     this.lastStateChange = Date.now();
-    
+
     if (newState === CircuitState.CLOSED) {
       this.failureCount = 0;
       this.successCount = 0;
@@ -100,7 +102,7 @@ export class CircuitBreaker {
       successCount: this.successCount,
       lastFailureTime: this.lastFailureTime,
       lastStateChange: this.lastStateChange,
-      timeInCurrentState: Date.now() - this.lastStateChange
+      timeInCurrentState: Date.now() - this.lastStateChange,
     };
   }
 

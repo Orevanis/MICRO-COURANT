@@ -1,11 +1,11 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useAuthStore } from '../stores/authStore';
-import { Shield, Lock } from 'lucide-react';
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useAuthStore } from "../stores/authStore";
+import { Shield, Lock } from "lucide-react";
 
 export default function Login() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const { login } = useAuthStore();
@@ -13,24 +13,24 @@ export default function Login() {
   const handleLogin = async (e) => {
     e.preventDefault();
     setLoading(true);
-    
+
     try {
       // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+
       const mockUser = {
-        id: 'OP-001',
+        id: "OP-001",
         email: email,
-        role: 'operator',
-        name: 'Grid Operator'
+        role: "operator",
+        name: "Grid Operator",
       };
-      
-      const mockToken = 'mock_operator_token_' + Date.now();
-      
+
+      const mockToken = "mock_operator_token_" + Date.now();
+
       login(mockUser, mockToken);
-      navigate('/');
+      navigate("/");
     } catch (error) {
-      console.error('Login failed:', error);
+      console.error("Login failed:", error);
     } finally {
       setLoading(false);
     }
@@ -82,7 +82,7 @@ export default function Login() {
             className="btn-primary w-full flex items-center justify-center space-x-2 py-3"
           >
             <Lock size={20} />
-            <span>{loading ? 'Signing in...' : 'Sign In'}</span>
+            <span>{loading ? "Signing in..." : "Sign In"}</span>
           </button>
         </form>
 

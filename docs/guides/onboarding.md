@@ -95,6 +95,7 @@ cp infra/iot-simulator/.env.example infra/iot-simulator/.env
 ```
 
 Update the following values in each `.env` file:
+
 - Database credentials
 - Redis configuration
 - Stellar network settings
@@ -110,6 +111,7 @@ docker-compose up -d
 ```
 
 This starts:
+
 - PostgreSQL
 - Redis
 - Mosquitto MQTT broker
@@ -232,6 +234,7 @@ git push origin feature/your-feature-name
 ```
 
 Create a pull request on GitHub with:
+
 - Description of changes
 - Link to related issues
 - Test results
@@ -321,6 +324,7 @@ npm test
 ### PWA Testing
 
 To test PWA functionality:
+
 1. Run development server
 2. Open Chrome DevTools
 3. Go to Application tab

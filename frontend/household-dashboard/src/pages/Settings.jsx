@@ -1,5 +1,11 @@
-import { Settings as SettingsIcon, User, Bell, Shield, LogOut } from 'lucide-react';
-import { useAuthStore } from '../stores/authStore';
+import {
+  Settings as SettingsIcon,
+  User,
+  Bell,
+  Shield,
+  LogOut,
+} from "lucide-react";
+import { useAuthStore } from "../stores/authStore";
 
 export default function Settings() {
   const { user, logout } = useAuthStore();
@@ -81,7 +87,9 @@ export default function Settings() {
           <div className="flex items-center justify-between">
             <div>
               <p className="font-medium">Low Bandwidth Mode</p>
-              <p className="text-sm text-gray-600">Reduce data usage for slow connections</p>
+              <p className="text-sm text-gray-600">
+                Reduce data usage for slow connections
+              </p>
             </div>
             <label className="relative inline-flex items-center cursor-pointer">
               <input type="checkbox" className="sr-only peer" />
@@ -99,9 +107,7 @@ export default function Settings() {
         </div>
 
         <div className="space-y-4">
-          <button className="btn-secondary w-full">
-            Change Wallet
-          </button>
+          <button className="btn-secondary w-full">Change Wallet</button>
           <button className="btn-secondary w-full">
             View Connected Devices
           </button>

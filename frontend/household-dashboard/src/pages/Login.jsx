@@ -1,7 +1,7 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useAuthStore } from '../stores/authStore';
-import { Wallet, Sparkles } from 'lucide-react';
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useAuthStore } from "../stores/authStore";
+import { Wallet, Sparkles } from "lucide-react";
 
 export default function Login() {
   const [loading, setLoading] = useState(false);
@@ -10,24 +10,24 @@ export default function Login() {
 
   const handleConnectWallet = async () => {
     setLoading(true);
-    
+
     try {
       // In a real implementation, this would connect to Freighter wallet
       // For now, we'll simulate the connection
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
+      await new Promise((resolve) => setTimeout(resolve, 1500));
+
       const mockUser = {
-        id: 'GB7TAYUQKJ7L5T7M6F5N4R3E2W1Q0A9S8D7F6G5H4',
-        stellar_address: 'GB7TAYUQKJ7L5T7M6F5N4R3E2W1Q0A9S8D7F6G5H4',
-        role: 'household'
+        id: "GB7TAYUQKJ7L5T7M6F5N4R3E2W1Q0A9S8D7F6G5H4",
+        stellar_address: "GB7TAYUQKJ7L5T7M6F5N4R3E2W1Q0A9S8D7F6G5H4",
+        role: "household",
       };
-      
-      const mockToken = 'mock_jwt_token_' + Date.now();
-      
+
+      const mockToken = "mock_jwt_token_" + Date.now();
+
       login(mockUser, mockToken);
-      navigate('/');
+      navigate("/");
     } catch (error) {
-      console.error('Wallet connection failed:', error);
+      console.error("Wallet connection failed:", error);
     } finally {
       setLoading(false);
     }
@@ -58,14 +58,16 @@ export default function Login() {
             className="btn-primary w-full flex items-center justify-center space-x-2 py-3"
           >
             <Wallet size={24} />
-            <span>{loading ? 'Connecting...' : 'Connect Freighter Wallet'}</span>
+            <span>
+              {loading ? "Connecting..." : "Connect Freighter Wallet"}
+            </span>
           </button>
 
           <div className="text-center">
             <p className="text-xs text-gray-500 mb-2">Don't have a wallet?</p>
-            <a 
-              href="https://freighter.app" 
-              target="_blank" 
+            <a
+              href="https://freighter.app"
+              target="_blank"
               rel="noopener noreferrer"
               className="text-sm text-primary-600 hover:text-primary-700"
             >

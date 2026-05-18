@@ -1,26 +1,76 @@
-import { useState } from 'react';
-import { Search, Plus, Filter, MoreVertical, CheckCircle, XCircle, AlertCircle } from 'lucide-react';
+import { useState } from "react";
+import {
+  Search,
+  Plus,
+  Filter,
+  MoreVertical,
+  CheckCircle,
+  XCircle,
+  AlertCircle,
+} from "lucide-react";
 
 export default function Meters() {
-  const [searchTerm, setSearchTerm] = useState('');
-  const [filterStatus, setFilterStatus] = useState('all');
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filterStatus, setFilterStatus] = useState("all");
 
   const meters = [
-    { id: 'MTR-0001', household: 'HH-001', location: 'Zone A - Sector 1', status: 'active', lastReading: 45.2, trustScore: 100 },
-    { id: 'MTR-0002', household: 'HH-002', location: 'Zone A - Sector 1', status: 'active', lastReading: 38.7, trustScore: 98 },
-    { id: 'MTR-0003', household: 'HH-003', location: 'Zone B - Sector 2', status: 'suspended', lastReading: 52.1, trustScore: 95 },
-    { id: 'MTR-0004', household: 'HH-004', location: 'Zone B - Sector 2', status: 'active', lastReading: 41.3, trustScore: 100 },
-    { id: 'MTR-0005', household: 'HH-005', location: 'Zone C - Sector 3', status: 'tampered', lastReading: 89.4, trustScore: 45 },
-    { id: 'MTR-0006', household: 'HH-006', location: 'Zone C - Sector 3', status: 'active', lastReading: 36.8, trustScore: 100 },
+    {
+      id: "MTR-0001",
+      household: "HH-001",
+      location: "Zone A - Sector 1",
+      status: "active",
+      lastReading: 45.2,
+      trustScore: 100,
+    },
+    {
+      id: "MTR-0002",
+      household: "HH-002",
+      location: "Zone A - Sector 1",
+      status: "active",
+      lastReading: 38.7,
+      trustScore: 98,
+    },
+    {
+      id: "MTR-0003",
+      household: "HH-003",
+      location: "Zone B - Sector 2",
+      status: "suspended",
+      lastReading: 52.1,
+      trustScore: 95,
+    },
+    {
+      id: "MTR-0004",
+      household: "HH-004",
+      location: "Zone B - Sector 2",
+      status: "active",
+      lastReading: 41.3,
+      trustScore: 100,
+    },
+    {
+      id: "MTR-0005",
+      household: "HH-005",
+      location: "Zone C - Sector 3",
+      status: "tampered",
+      lastReading: 89.4,
+      trustScore: 45,
+    },
+    {
+      id: "MTR-0006",
+      household: "HH-006",
+      location: "Zone C - Sector 3",
+      status: "active",
+      lastReading: 36.8,
+      trustScore: 100,
+    },
   ];
 
   const getStatusIcon = (status) => {
     switch (status) {
-      case 'active':
+      case "active":
         return <CheckCircle className="text-green-600" size={20} />;
-      case 'suspended':
+      case "suspended":
         return <XCircle className="text-red-600" size={20} />;
-      case 'tampered':
+      case "tampered":
         return <AlertCircle className="text-orange-600" size={20} />;
       default:
         return null;
@@ -29,21 +79,23 @@ export default function Meters() {
 
   const getStatusBadge = (status) => {
     switch (status) {
-      case 'active':
-        return 'bg-green-100 text-green-800';
-      case 'suspended':
-        return 'bg-red-100 text-red-800';
-      case 'tampered':
-        return 'bg-orange-100 text-orange-800';
+      case "active":
+        return "bg-green-100 text-green-800";
+      case "suspended":
+        return "bg-red-100 text-red-800";
+      case "tampered":
+        return "bg-orange-100 text-orange-800";
       default:
-        return 'bg-gray-100 text-gray-800';
+        return "bg-gray-100 text-gray-800";
     }
   };
 
-  const filteredMeters = meters.filter(meter => {
-    const matchesSearch = meter.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         meter.household.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesFilter = filterStatus === 'all' || meter.status === filterStatus;
+  const filteredMeters = meters.filter((meter) => {
+    const matchesSearch =
+      meter.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      meter.household.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesFilter =
+      filterStatus === "all" || meter.status === filterStatus;
     return matchesSearch && matchesFilter;
   });
 
@@ -64,7 +116,10 @@ export default function Meters() {
       <div className="card">
         <div className="flex flex-col md:flex-row gap-4">
           <div className="flex-1 relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
+            <Search
+              className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
+              size={20}
+            />
             <input
               type="text"
               placeholder="Search by meter ID or household..."
@@ -94,13 +149,27 @@ export default function Meters() {
         <table className="w-full">
           <thead>
             <tr className="border-b">
-              <th className="text-left py-3 px-4 font-semibold text-gray-700">Meter ID</th>
-              <th className="text-left py-3 px-4 font-semibold text-gray-700">Household</th>
-              <th className="text-left py-3 px-4 font-semibold text-gray-700">Location</th>
-              <th className="text-left py-3 px-4 font-semibold text-gray-700">Status</th>
-              <th className="text-left py-3 px-4 font-semibold text-gray-700">Last Reading</th>
-              <th className="text-left py-3 px-4 font-semibold text-gray-700">Trust Score</th>
-              <th className="text-left py-3 px-4 font-semibold text-gray-700">Actions</th>
+              <th className="text-left py-3 px-4 font-semibold text-gray-700">
+                Meter ID
+              </th>
+              <th className="text-left py-3 px-4 font-semibold text-gray-700">
+                Household
+              </th>
+              <th className="text-left py-3 px-4 font-semibold text-gray-700">
+                Location
+              </th>
+              <th className="text-left py-3 px-4 font-semibold text-gray-700">
+                Status
+              </th>
+              <th className="text-left py-3 px-4 font-semibold text-gray-700">
+                Last Reading
+              </th>
+              <th className="text-left py-3 px-4 font-semibold text-gray-700">
+                Trust Score
+              </th>
+              <th className="text-left py-3 px-4 font-semibold text-gray-700">
+                Actions
+              </th>
             </tr>
           </thead>
           <tbody>
@@ -108,11 +177,15 @@ export default function Meters() {
               <tr key={meter.id} className="border-b hover:bg-gray-50">
                 <td className="py-3 px-4 font-medium">{meter.id}</td>
                 <td className="py-3 px-4">{meter.household}</td>
-                <td className="py-3 px-4 text-sm text-gray-600">{meter.location}</td>
+                <td className="py-3 px-4 text-sm text-gray-600">
+                  {meter.location}
+                </td>
                 <td className="py-3 px-4">
                   <div className="flex items-center space-x-2">
                     {getStatusIcon(meter.status)}
-                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusBadge(meter.status)}`}>
+                    <span
+                      className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusBadge(meter.status)}`}
+                    >
                       {meter.status}
                     </span>
                   </div>
@@ -121,10 +194,13 @@ export default function Meters() {
                 <td className="py-3 px-4">
                   <div className="flex items-center space-x-2">
                     <div className="w-16 bg-gray-200 rounded-full h-2">
-                      <div 
+                      <div
                         className={`h-2 rounded-full ${
-                          meter.trustScore >= 90 ? 'bg-green-500' : 
-                          meter.trustScore >= 70 ? 'bg-yellow-500' : 'bg-red-500'
+                          meter.trustScore >= 90
+                            ? "bg-green-500"
+                            : meter.trustScore >= 70
+                              ? "bg-yellow-500"
+                              : "bg-red-500"
                         }`}
                         style={{ width: `${meter.trustScore}%` }}
                       ></div>
@@ -149,7 +225,9 @@ export default function Meters() {
           Showing {filteredMeters.length} of {meters.length} meters
         </p>
         <div className="flex space-x-2">
-          <button className="btn-secondary px-4 py-2" disabled>Previous</button>
+          <button className="btn-secondary px-4 py-2" disabled>
+            Previous
+          </button>
           <button className="btn-primary px-4 py-2">Next</button>
         </div>
       </div>

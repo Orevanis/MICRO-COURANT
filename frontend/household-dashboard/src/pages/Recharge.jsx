@@ -1,8 +1,8 @@
-import { useState } from 'react';
-import { PlusCircle, Wallet, CheckCircle } from 'lucide-react';
+import { useState } from "react";
+import { PlusCircle, Wallet, CheckCircle } from "lucide-react";
 
 export default function Recharge() {
-  const [amount, setAmount] = useState('');
+  const [amount, setAmount] = useState("");
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
 
@@ -11,7 +11,7 @@ export default function Recharge() {
   const handleRecharge = async () => {
     setLoading(true);
     // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 2000));
+    await new Promise((resolve) => setTimeout(resolve, 2000));
     setLoading(false);
     setSuccess(true);
   };
@@ -21,12 +21,11 @@ export default function Recharge() {
       <div className="flex items-center justify-center min-h-[60vh]">
         <div className="text-center">
           <CheckCircle className="mx-auto text-green-600 mb-4" size={64} />
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">Recharge Successful!</h2>
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">
+            Recharge Successful!
+          </h2>
           <p className="text-gray-600 mb-6">Your balance has been updated.</p>
-          <button 
-            onClick={() => setSuccess(false)}
-            className="btn-primary"
-          >
+          <button onClick={() => setSuccess(false)} className="btn-primary">
             Done
           </button>
         </div>
@@ -38,7 +37,9 @@ export default function Recharge() {
     <div className="space-y-6 max-w-2xl mx-auto">
       <div>
         <h1 className="text-2xl font-bold text-gray-900">Recharge Balance</h1>
-        <p className="text-gray-600">Add funds to your energy account using Stellar</p>
+        <p className="text-gray-600">
+          Add funds to your energy account using Stellar
+        </p>
       </div>
 
       {/* Stellar wallet integration */}
@@ -49,7 +50,9 @@ export default function Recharge() {
           </div>
           <div>
             <h3 className="font-semibold">Stellar Wallet</h3>
-            <p className="text-sm text-gray-600">Connect your wallet to recharge</p>
+            <p className="text-sm text-gray-600">
+              Connect your wallet to recharge
+            </p>
           </div>
         </div>
 
@@ -62,7 +65,7 @@ export default function Recharge() {
       {/* Amount selection */}
       <div className="card">
         <h3 className="font-semibold mb-4">Select Amount</h3>
-        
+
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
           {presetAmounts.map((preset) => (
             <button
@@ -70,8 +73,8 @@ export default function Recharge() {
               onClick={() => setAmount(preset.toString())}
               className={`p-4 rounded-lg border-2 transition-colors ${
                 amount === preset.toString()
-                  ? 'border-primary-500 bg-primary-50'
-                  : 'border-gray-200 hover:border-gray-300'
+                  ? "border-primary-500 bg-primary-50"
+                  : "border-gray-200 hover:border-gray-300"
               }`}
             >
               <p className="text-2xl font-bold">{preset}</p>
@@ -100,7 +103,7 @@ export default function Recharge() {
           disabled={!amount || loading}
           className="btn-primary w-full"
         >
-          {loading ? 'Processing...' : 'Recharge'}
+          {loading ? "Processing..." : "Recharge"}
         </button>
       </div>
 
